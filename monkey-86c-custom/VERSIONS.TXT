@@ -1,0 +1,2574 @@
+
+***** v86c *****
+
+Added workaround for GLES20.glGetActiveUniform bug in android6.
+
+
+***** v86b *****
+
+Fixed mojo2 Renderer leak when resizing viewport.
+
+Fixed html5 #MOJO_AUTO_SUSPEND_ENABLED=False.
+
+
+***** v86a *****
+
+MacOS Ted now uses Qt5.5. This adds around 20M to the app (which is why I tried to avoid it) but I just CANNOT get Qt4.8 running (or even installed) on the increasingly walled off 'El Capitan'.
+
+Added CountJoysticks( update:bool=true ) for glfw3 targets only. You will need to call this to detect if any joysticks have been attached/detached. Returns 0 and does nothing on all other targets.
+
+Merged skn3's html5 gamepad support pull request.
+
+
+***** v85e *****
+
+Mojo2 tweak: Canvas New/SetRenderTarget param can now be either an Image or a Texture.
+
+Mojo2 tweak: Bump map rotation now taken into account by lighting equations.
+
+Mojo2 addition: Added Image.SetFlagsMask and Image.FlagsMask functions.
+
+
+***** v85d *****
+
+Applied PathToFilepath fix to angle target too.
+
+
+***** v85c *****
+
+Added Ferdis fix for ios monkeystore not failing when offline.
+
+Added 'direct:Bool' parameter to DataBuffer constructor, which should be true when creating opengl VBO databuffers (defaults to false). Only affects android, ignored on all other targets.
+
+Fixed glfw3 PathToFilePath so SaveState saves to User/AppData/... as it used to in glfw2.
+
+
+***** v85b *****
+
+Applied Xaron's fix for HttpRequest on winrt.
+
+Changed android string->int/float conversion to native code to prevent 'number format exceptions'.
+
+
+***** v85a *****
+
+Mojo2 now inits itself properly.
+
+Fixed vectormonkey so it uses LoadString instead of an inline mega-string.
+
+Fixed angle target so spaces in project path work.
+
+
+***** v84e *****
+
+Fixed issue with Mojo2 html5 texture loading.
+
+Mojo2 Shader.OnLoadMaterial now returns a Material so it can signal failure.
+
+Mooo2 DrawList.DrawPoint and DrawList.DrawLine coords offset by .5
+
+
+***** v84d *****
+
+Mojo2 DrawList.Color now returns a copy. Added DrawList.GetColor.
+
+Tweaked android_new target so OnUpdate always happens on render thread.
+
+
+***** v84c *****
+
+Added versions of DrawList.DrawPrimitives/DrawList.DrawIndexedPrimitives with texcoords:float[] param.
+
+Canvas.RenderDrawList NOT affected by current blend mode - blend modes used to create DrawList always used.
+
+Canvas.RenderDrawList now always affected by current color/alpha.
+
+Canvas.RenderDrawList now always affected by 2d matrix.
+
+Canvas.RenderDrawListEx renamed to Canvas.RenderDrawList.
+
+Mojo2 2d matrix stack now quietly wraps around.
+
+Added DrawList.SetMatrixStackCapacity.
+
+Replaced all #BLAH_FILES="..." with #BLAH_FILES+="..." in all target CONFIG.MONKEY files so they don't fail if code sets a custom file type filter.
+
+Added 'VBO orphaning' to mojo2 for improved performance on at least ios/mac.
+
+
+***** v84b *****
+
+Mojo2 DrawOp's now allocated from a pool.
+
+Undid fancy but broken reflection fixes.
+
+Fixed some mojo2 issues, including IE11 and Safari fixes.
+
+
+***** v84a *****
+
+Ted now prompts for rebuild docs at startup if docs/html not found.
+
+Added f1 cycle through helps for a keyword to Ted.
+
+Added shift-f5 to kill app to Ted.
+
+Updated stb libs to latest version for all glfw targets.
+
+Updated glfw3 lib to latest version for glfw3 targets.
+
+Bumped glfw3 target msvc projects to msvc2013e. Note: msbuild has moved, see/update config.winnt.txt
+
+Added brl.requesters for simple modal requester support (Glfw3/Pc/Mac only)
+
+Glfw3 builds on macos can now use Objective C.
+
+Lots of opengl tweaks.
+
+
+***** v83c *****
+
+Added Protected and Friend to language!
+
+Fixed some reflection issues.
+
+Fixed some preprocessor issues.
+
+Added Stack.Data
+
+Fixed some Ted issues.
+
+Fixed more issues with gles20 native code.
+
+Added support for '.' member access operator at end of line. Not supported for module paths.
+
+
+***** v83b *****
+
+Fixed issue with spaces in ANT_PATH.
+
+Implemented nullterm's fix for ios audio category issues.
+
+Rebuilt Linux Ted with Qt5, resulting in 1001% sexier fonts. No idea what's up with Linux fonts in Qt4.
+
+Fixed unreachable code issue in trans for actionscript target.
+
+
+***** v83a *****
+
+Added src/rebuildall.sh, linux only.
+
+Fixed ReadPixels setting display purple on XNA.
+
+Fixed some MonkeyStore issues - added 'interrupted:Product[]' param to OnOpenStoreComplete.
+
+Fixed gles20 glBufferData not accepting null databuffer.
+
+Added some PSM docs courtesy of Alan Rawkins.
+
+Added some more flags to SetDeviceWindow (GLFW only!).
+
+Fixed ios LoadImageData bug.
+
+Updated glfw3 to github version.
+
+Added GLFW_REPEAT to OnKey handler for glfw target for GetChar fix.
+
+
+***** v82b *****
+
+Fixed glfw3 windows/linux gcc builds dumping obj files in same dir.
+
+Fixed val decls can have void type.
+
+Upped max debugger array elements dumped from 10 to 100.
+
+Fixed issue with alias statements confusing/crashing new import handling.
+
+
+***** v82a *****
+
+Fixed some typos in brl.datastream.
+
+Imports now happen while preprocessing, not after.
+
+Fixed c++ issue with reflection and recent extends null fixes.
+
+Fixed html5 webaudio panning issue - panningModel now set to "equalpower".
+
+
+***** v81b *****
+
+Added #GLFW_WINDOW_DECORATED to glfw3 target - set to 'false' to create a borderless etc window.
+
+Fixed macos glfw3 audio not working.
+
+Ant now referenced by absolute path in android builder because Yosemite...
+
+Fixed glfw/glfw3 targets so they can build with mingw64 (TDM-GCC-64 tested). Building with mingw64 will produce 64 bit apps by default.
+
+Removed forced 32 bit architecture for macos stdcpp builds.
+
+Moved some hard coded gcc options from transcc to makefile for glfw target.
+
+Added AppPath/AppArgs/SetEnv/GetEnv/ChangeDir/CurrentDir/Execute/ExitApp to brl.process - brl.filepath, brl.filesystem and brl.process should now be preferred over os module (although that wont be going anywhere just yet).
+
+Added src/mserver/mserver.monkey, src/launcher/launcher.monkey and src/rebuildall.monkey for linux 64.
+
+Renamed src/monkey->src/launcher; removed src/modman.
+
+Added #GLFW_VERSION int var to glfw targets.
+
+Fixed glfw3 window resizing not updating DeviceWidth/DeviceHeight.
+
+Fixed weird yosemite issue where ant wasn't found when building for android.
+
+
+***** v81a *****
+
+Renamed a bunch of targets  - see IDE combo box. Shouldn't affect monkey code?
+
+Added new glfw3 target (note: had to apt-get install libxcursor-dev and libxinerama-dev on Linux)
+
+More extern extends null fixes for debugger/gc.
+
+Fixed bug where extern 'extends null' objects confused cpp debug builds.
+
+Tweaked android audio so pool.stop() isn't inadvertantly called twice.
+
+
+***** v80c *****
+
+Fixed a nasty GC bug.
+
+Fixed misspelling of CFG_GLFW_APP_LABEL in glfw target.
+
+Had another hack at the glfw joystick code. Both pc/mac versions now attempt to detect xbox360 controllers (mac also tries to detect ps3) defaulting to 'logitech dual action' layout if device not recognized. FAR from foolproof, but should/may be an improvement on current setup.
+
+Added RealPath to brl.filesystem.
+
+
+***** v80b *****
+
+Fixed android_new 'sdk not found' admob issue - moved some google-player-services_lib config files to 'templates' dir.
+
+Fixed trans Next [varname] issue where varname was being ignored.
+
+Transcc android builders now preserve parent dir name when copying android #LIBS files from "x86", "mips", "armeabi" and "armeabi-v7a" dirs.
+
+Fixed misspelling of MANIFEST as MAINFEST in transcc android builders!
+
+Merged some pull requests: Internal android ActivityDelegate class now handles onNewIntent, and android brl.filesystem CopyFile() now handles src files in monkey://data/
+
+
+***** v80a *****
+
+Changed glfw LoadState/SaveState to use monkey://internal/.monkeystate if #GLFW_APP_LABEL is set.
+
+Changed glfw monkey://internal/ to point to local per-user app data location. App must set #GLFW_APP_LABEL (and optionally #GLFW_APP_PUBLISHER) for this to work. App data location on windows is: $APPDATA\GLFW_APP_PUBLISHER\GLFW_APP_LABEL; on linux: $HOME/.config/GLFW_APP_PUBLISHER/GLFW_APP_LABEL; on macos, $HOME/Library/Application Support/GLFW_APP_PUBLISHER/GLFW_APP_LABEL. If #GLFW_APP_PUBLISHER is not set, it's not used.
+
+Made glfw target monkey://data/ etc dir locations absolute, not CD relative.
+
+Removed local.properties file from googleplay lib in android_new target template. Seems to use 'app' local.properties file instead OK.
+
+Fixed glfw joystick button code with <12 buttons.
+
+
+***** v79e *****
+
+Made Image Init methods public so async loader can use them!
+
+Had a go at fixing dead code analysis for weird Java 'If True' exception.
+
+
+***** v79d *****
+
+Added experimental android_new target - targets API 10 (2.3.3 Gingerbread), requires SDK 19 (4.2.2). Uses googleplay for admob.
+
+Fixed android fullscreen soft keyboard issue.
+
+Fixed private methods/functions not really private.
+
+Fixed private const/var/class decls in modules causing name clashes.
+
+Ted fix: Project browser 'new file' now prompts before overwriting existing files.
+
+#HTML5_WEBAUDIO_ENABLED now defaults to True - code will still fallback to old media player code if webaudio not preset, eg: on IE11.
+
+Mojo openal alcOpenDevice now tries default, hardware, software devices, in that order.
+
+Fixed some opengl/webgl texImage bugs.
+
+Doubled max width of 'help' combobox in Ted.
+
+
+***** v79c *****
+
+Removed 'Flush' calls from mojo native WritePixels2 functions - shouldn't be necessary and causes issues outside OnRender.
+
+Performance tweaks to GC_MODE 2.
+
+
+***** v79b *****
+
+Fixed some bugs in c++ GC_MODE 2.
+
+
+***** v79a *****
+
+Points/Lines offset by +.5 in screenspace for android, ios, winrt, glfw and xna targets. Html5/Flash seem to be OK as-is; PSM still on hold until I get my Vita back...
+
+Restored winrt_winphone8 EnableKeyboard to its former 'glory', only tested on my HTC 8S though. Tried hard to get winrt_win8 EnableKeyboard going but gave up. I am seriously considering deprecating this feature as it's a nasty hack on pretty much all targets.
+
+
+***** v78h *****
+
+Added #FAST_SYNC_PROJECT_DATA to enable 'fast syncing' of app data, ala feature introduced in v78b. Defaults to False and may or may not work with your installation of xcode!
+
+
+***** v78g *****
+
+XNA MOJO_AUTO_SUSPEND_ENABLED forced to false for non-windows builds.
+
+Updated Ted so bmk src file arg is quoted, ie: you can use rebuildall.bmx in a monkey install with spaces in the path!
+
+Fixed XNA/WinRT async surface loading bugs.
+
+Kludged transcc to fix issue with xcode not recognizing changed data files. Maybe. Works here anyway.
+
+Fixed winrt music volume bug.
+
+Trailing ';' removed from Content-Type headers in MServer. MServer version bumped to 1.1 - has worked pretty well!
+
+Made FirstNode, LastNode public in Map.
+
+
+***** v78f *****
+
+Fixed Strdup issue in socket.monkey
+
+
+***** v78e *****
+
+Fixed Strdup issue in thread.monkey
+
+
+***** v78d *****
+
+Fixed ios accelerometer bug.
+
+Fixed async image loading/threading bugs.
+
+Removed limitations on supported text files types for PSM target.
+
+Fixed #CPP_DOUBLE_PRECISION_FLOATS=True messing up mouse events on desktop target.
+
+
+***** v78c *****
+
+Updated ios admob to 6.8.0
+
+Fixed xcode 5.1 build issues, upgraded project format etc.
+
+Added optional webaudio to html5 mojo - use #HTML5_WEBAUDIO_ENABLED=True to enable.
+
+Improved winphone8 playmusic volume.
+
+Added accelerometer support to winrt targets.
+
+Fixed PushMatrix so it grows stack.
+
+Fixed mserver so it doesn't lock .build folder on windows.
+
+Modified brl.monkeystore so you can call OpenStoreAsync repeatedly until success.
+
+
+***** v78b *****
+
+Project data no longer copied to target project every build - filetime now used to conditionally update data files.
+
+Fixed missing fields from java BBDisplayMode class implementation that was causing reflection confusion.
+
+
+***** v78a *****
+
+Fixed databuffer.LoadAsync private BBThread problem.
+
+Kludged around some weird winphone8 media engine issues.
+
+Added blind fix for glfw openal running out of sources.
+
+Fixed iOS touch event issue involving missing touch end/cancel events.
+
+
+***** v77g *****
+
+Removed reference to non-existant gc_force_sweep from ios admob code.
+
+
+***** v77f *****
+
+Tweaked os module.
+
+
+***** v77e *****
+
+Fixed winrt audio discard bug.
+
+
+***** v77d *****
+
+Fixed glfw SetSwapInterval bug.
+
+Added fallback for missing requestAnimationFrame on html5 with update rate 0.
+
+Added setAllowsCellularAccess:YES to ios httprequest.
+
+Added info-plist entry to disable status bar on ios7.0.
+
+Fixed httprequest so newlines aren't inserted.
+
+Fixed app.SaveState bug.
+
+Added winrt monkeystore for Windows Phone 8.0.
+
+.build folders now/at last tagged with version info taken from THIS file, eg: bouncyaliens.buildv77d
+
+
+***** v77c *****
+
+Fixed PSM ButtonsDown bug.
+
+Added OnResize method to App.
+
+Moved DeviceWidth/DeviceHeight from graphics to app module.
+
+Added DisplayMode class to app; DisplayModes, DesktopMode, SetDeviceWindow, SetSwapInterval functions to app module.
+
+Added  update rate '0'. This is 'go nuts' mode - app just runs as fast as possible and you get exactly one update per render.
+
+glfwSwapBuffers moved from mojo graphics code to target.
+
+Souped up html5 target template - moved resize handling code to html.
+
+Fixed XNA PlayMusic paused flag bug.
+
+Fixed transcc debug mode array indexing bug in js/as translators.
+
+
+***** v77b *****
+
+Added fix for c++ String.ToLower/ToUpper and unicode.
+
+
+***** v77a *****
+
+Ted now reads version info from VERSIONS.TXT for about dialog - NOTE TO SELF! DON'T CHANGE FORMAT OF VERSION HEADER!!!! ie: ***** vBLAH *****
+
+Had a stab at fixing android softkeyboard predictive text bug.
+
+glfw xcode project now builds main.mm instead of main.cpp so you can use objective C in glfw projects.
+
+Fixed transcc html5 builder makemeta bug where width/height were swapped for jpgs!
+
+Added 'Open in Help View' to Ted.
+
+Improved handling of non-gc memory allocation.
+
+Added -Wno-free-nonheap-object to glfw mingw ccopts for less warnings.
+
+Fixed winrt alpha bug.
+
+
+***** v76d *****
+
+Fixed some ios audio issues where audio crapped out after a clock 'alarm' fired.
+
+
+***** v76c *****
+
+Fixed an import modpath bug.
+
+Added #CC_LIBS app config var for stdcpp target.
+
+
+***** v76b *****
+
+Fixed ios issue where app didn't appear on latest simulator.
+
+Added keypad support to glfw and KEY_NUM0 etc to keycodes.monkey and docs.
+
+#GLFW_USE_MINGW now defaults to True.
+
+Added #include <pthread.h> to macos glfw target for Mavericks.
+
+Minimized some compiler warnings on macos glfw/stdcpp targets (only for monkey translated code - stb/glfw still generate some warnings but these are only built 'first time').
+
+Fixed DataBuffer PokeString bug.
+
+Fixed Image.Discard not discarding image immediately with some multiframe images.
+
+Added MacOS support for ANT_PATH to transcc for Mavericks - defaults to "${HOME}/apache-ant-1.9.2" in config.macos.txt
+
+Fixed Ted/Qt/Mavericks issue ala: http://successfulsoftware.net/2013/10/23/fixing-qt-4-for-mac-os-x-10-9-mavericks/
+
+Turned on bitmap smoothing for main 'drawing surface' bitmap in flash mojo.graphics if MOJO_IMAGE_FILTERING_ENABLED is True.
+
+Removed GL_DEPTH_BUFFER_BIT from glClear in android mojo.graphics.
+
+Tweaked winrt_win8 target for windows 8.1
+
+Moved html5 onclick/oncontextmenu handlers from html to js - added canvas.focus() to onclick/ontouchstart handlers.
+
+Fixed some modpath/reflection issues with files 'above' module dirs. I hope.
+
+Added MODPATH builtin containing module path of current module, mainly for use with RELFECTION_FILTER - probably not the best name...
+
+Added pthread support to linux stdcpp builder.
+
+Fixed some more brl.json bugs.
+
+Transcc 'makemeta' code for html5 builder converted from cpp->monkey.
+
+Fixed html5/flash async image/sound loader bugs.
+
+
+***** v76a *****
+
+Fixed flash audio bug where SetMusicVolume on paused music crashed.
+
+Added minimal monkey.deque.Deque class.
+
+Change iOS deployment target to 4.3 for xcode5 compatibility.
+
+Added GLFW_SWAP_INTERVAL app config setting for glfw target, set to -1 to not set swap interval at all (ie: use driver default). Defaults to -1 for BW compatiblity.
+
+Fixed some bugs with arrays of arrays in c#/java.
+
+
+***** v75d *****
+
+Fixed glfw WritePixels issue.
+
+Fixed json parsing bug with empty objects/arrays.
+
+
+***** v75c *****
+
+Added support for more Ouya buttons - all buttons supported on my Ouya and Ps3 controllers now. Xbox360 controller a bit weird - always appears on port 3, and dpad not generating any button presses.
+
+Added JOY_LSB (LSB='Left Stick Button'), JOY_RSB and JOY_MENU keycodes (only used on Ouya right now).
+
+Fixed Android build issues.
+
+Added GL_GLEXT_PROTOTYPES to linux target main.h
+
+Fixed ${CD}, ${TARGET} etc in preprocessor strings.
+
+Fixed html5 app resume causing last played sound to replay.
+
+Fixed transcc +VAR=BLAH.
+
+
+***** v75b *****
+
+Fixed winphone 8 orientation bug.
+
+Restored anrdroid_ouya target to release!
+
+Fixed XNA music not suspending/resuming correctly.
+
+Fixed XNA app resume causing last played sound to replay.
+
+Updated reflection docs.
+
+Tidied up lots of BLAH_IMPLEMENTED stuff.
+
+Tidied up preprocessor a bit: Preprocessor vars are now strongly typed, and non-existant vars now return a 'False' value instead of generating an error. Note: Some global funcs in trans/config.monkey have changed, which may affect target authors.
+
+
+***** v75a *****
+
+Since I'm breaking win8 stuff, renamed "win8" target/builder to "winrt" - ie: #If TARGET="winrt" for win8/winphone8 apps now. Also renamed a bunch of *win8* files to winrt.
+
+After much hair pulling and gnashing of teeth, win8 and winphone8 targets are now xaml/d3d style apps. Both with a smidgen of c# thrown in, although Monkey translated code is still c++. Win8/winphone8 app orientation must now be set via manifest. 'SetUpdateRate 60' recommended on winphone8 due to OS 'timing anomolies'.
+
+Added support for ! to data path filters.
+
+Fixed brl.process string cast bug preventing modman compiling.
+
+Fixed a += side effects issue again.
+
+Updated win8 mojo for potential xaml-ification.
+
+Updated win8 transcc builder so it can handle C# projects too.
+
+Renamed native c++ Print() to bbPrint() and Error() to bbError().
+
+
+***** v74a *****
+
+Fixed xna WP7 bug where accelerometer was sending events to app before OnCreate, causing app crash.
+
+Added 'smart' admob banner sizes.
+
+Added a Ouya target! Mainly just for fun, but joystick/IAP is in - see iaptest banana for more...
+
+Fixed ios<5 autorotation - tested on: ios4.3.5 iPod; ios5.1.1 iPad1; ios6.1.3 iPod.
+
+Clean up lang.cpp so #WIN8_PRINT_ENABLED doesn't confuse other targets.
+
+Implemented Devolonters fix so data file filters can be used (successfully) with += eg: #TEXT_FILES+="*.xml"
+
+Tweaked html5/flash/windowed-xna targets so they get at least one 'OnRender' after being suspended, allowing you to set a flag in OnSuspend and render a 'paused' image in OnRender. See bouncyaliens...
+
+Fixed cs/java downcast bug when downcast appears in a 'while'. Should be faster too (on cs anyway).
+
+
+***** v73b *****
+
+Fixed win8 image loader throwing exception if image not found.
+
+transcc added support for mxmlc debug builds to flasher builder.
+
+Fixed some flash audio issues - added flash support for ChannelState and MusicState.
+
+Fixed win8 async image/sound loaders.
+
+Fixed some compile errors in thread.cs and databuffer.cs
+
+
+***** V73a *****
+
+Added iaptest to bananas/mak.
+
+Changed default MOJO_AUTO_SUSPEND_ENABLED to true for relevant targets.
+
+Added brl.json module.
+
+Added methods ReadString and WriteString to Stream.
+
+Added methods ReadAll and WriteAll to Stream.
+
+Added brl.monkeystore module.
+
+Added CC_OPTS app config setting for stdcpp target only.
+
+Added XnaGame and XnaDisplayMode classes to xna target:
+
+Class XnaGame
+
+	Function GetXnaGame:XnaGame()
+	
+	Method GetXnaDesktopMode:XnaDisplayMode()
+	Method GetXnaDisplayModes:XnaDisplayMode[]()
+	Method SetXnaDisplayMode:Void( width:Int,height:Int,format:Int,fullscreen:Bool )
+
+End
+
+Class XnaDisplayMode
+	Field Width:Int
+	Field Height:Int
+	Field Format:Int	'currently unused, always '1'.
+End
+
+eg: XnaGame.GetXnaGame().SetXnaDisplayMode( 1024,768,1,True )	'always use '1' for format for now...
+
+No 'window-less startup' support in XNA.
+
+See bouncyaliens for a demo.
+
+
+***** V72b *****
+
+Fixed c++ String::ToCString<> mem leak.
+
+Implemented custom https friendly HttpRequest for android, ios, win8, html5, flash.
+
+Fixed trans munging of symbols to ignore case so Java doesn't generate clashing class file on case insensitive file systems.
+
+
+***** V72a *****
+
+Added GlfwGame and GlfwVideoMode classes to glfw target:
+
+Class GlfwGame
+
+	Function GetGlfwGame:GlfwGame()
+	
+	Method GetGlfwDesktopMode:GlfwVideoMode()
+	Method GetGlfwVideoModes:GlfwVideoMode[]()
+	Method SetGlfwWindow:Void( width:Int,height:Int,red:Int,green:Int,blue:Int,alpha:Int,depth:Int,stencil:Int,fullscreen:Bool )
+	
+End
+
+Class GlfwVideoMode
+	Field Width:Int
+	Field Height:Int
+	Field RedBits:Int
+	Field GreenBits:Int
+	Field BlueBits:Int
+End
+
+eg: GlfwGame.GetGlfwGame().SetGlfwWindow( 1024,768,8,8,8,0,0,0,True )
+
+Glfw mojo images now surive GL context changes.
+
+Set app config settings GLFW_WINDOW_WIDTH and GLFW_WINDOW_HEIGHT to 0 to disable initial graphics window - but make sure to create one using SetGlfwWindow above before OnCreate finishes!
+
+
+***** V71c *****
+
+Fixed Win8 mouse event handling.
+
+Fixed Win8 device orientation issues.
+
+Added PeekShorts, PokeShorts, PeekInts, PokeInts, PeekFloats, PokeFloats to DataBuffer.
+
+
+***** V71b *****
+
+Added ReceiveAll and ReceiveAllAsync to Socket for receiving known length messages. ReceiveFrom, Send and SendTo are already implictly 'all'...
+
+Version 1 of WinRT UDP sockets implemented - nasty stuff, may not be 100% right!
+
+Fixed flash Print security exception.
+
+Fixed trans "Unsafe call!!!!!" bug.
+
+
+***** V71a *****
+
+Update admob SDKs to android=6.4.1, ios=6.4.2.
+
+Removed modules: brl.asyncdataloader, brl.asyncstream, brl.asynctcpstream, brl.asynctcpconnector.
+
+Added DataBuffer.LoadAsync.
+
+Changed brl.httprequest to use a brl.socket under the hood.
+
+Changed brl.tcpstream to use a brl.socket under the hood. 
+
+Added brl.socket for all your tcp/udp needs.
+
+Fixed filestream on stdcpp target.
+
+Fixed win8 tcpstream.
+
+Added CPP_GC_MODE app config setting, one of:
+
+#CPP_GC_MODE=0	'Disable GC
+#CPP_GC_MODE=1	'Incremental collect every OnWhatever (default)
+#CPP_GC_MODE=2	'Incremental collect every GC allocation (adds some runtime overhead).
+
+CPP_GC_TRIGGER now controls how much memory is allocated before a GC 'sweep' occurs. Increase this for faster GC at the cost of more 'wasted' memory. Defaults to 8M.
+
+Added CPP_GC_MAX_LOCALS app config settings. This is used with GC_MODE 2 to track local object vars and defaults to 8192. Trans uses 445 locals to build itself, so this should be plenty for most apps but if you're doing something very recursive you might want to bump this.
+
+Tweaked makedocs. Can now handle 'relative' imports in .monkey files and added #Rem monkeydoc on/off.
+
+
+***** V70g *****
+
+Fixed iOS DisableKeyboard not working bug.
+
+
+
+***** V70f *****
+
+HttpRequest: Merged devolonter's html5 version addition.
+
+Ted: Console utf8 friendlier.
+
+C++ lang: Print outputs utf8.
+
+Url: Fixed default scheme/port issue.
+
+ios target: Fixed admob not building problem.
+
+MServer: Fixed content type for wav files confusing Firefox.
+
+Android: Fixed ANDRIOD_VERSON_NAME in target config.txt.
+
+Trans: Added debug index checking for String[blah] exprs to cpp/js/as.
+
+Mojo: Added experimental DrawPoly overload with textured image (vertex format is x,y,u,v) - undocced and only available on glfw, ios, android, win8.
+
+Trans: Improved detection of virtual/final etc methods for C++, C# and Java translators.
+
+Trans: Fixed float Mod op bugs.
+
+FileStream: Fixed c++ "u" mode, added "a" for append.
+
+IosGame: Fixed weird virtual keyboard bug.
+
+Ted/Makedocs: Added Alias keyword.
+
+Mojo: Fixed flash LoadState bug.
+
+Mojo: Added Siread's magic ios code for mixing game audio with user music.
+
+Trans: Fixed String(0)<>"0" bug.
+
+Mojo: Fixed win8 DrawLine bug.
+
+Makedocs: Fixed issue with camelCase module names.
+
+Makedocs: Now searches all modules in MODPATH in bin/config.blah.txt files.
+
+Ted: Tweaked win32 proc killer to detect cycles in procs.
+
+
+***** V70e *****
+
+Refixed iOS device size issues.
+
+
+***** V70d *****
+
+Added more keyword docs.
+
+Added win8 multitouch support.
+
+Fixed android manifest VERSION problems.
+
+
+***** V70c *****
+
+Updated glfw linux makefile.
+
+Fixed bool const evalutor bug in trans.
+
+Fixed Invalid DeviceWidth/DeviceHeight in OnCreate on iOS.
+
+Added ANDROID_VERSION_CODE and ANDROID_VERSION_NAME app config settings.
+
+Fixed winrt threads and winphone8 sockets.
+
+Added Rebuild Help to Ted - can't get QWebPage reload working though, so you'll have to manually right-click/reload the page.
+
+Added Makedocs to rebuildall.bmx/bin.
+
+Added Close Others to Ted.
+
+Added Stack.Sort.
+
+Added brl.filesystem module.
+
+Added Check/Update to Ted's build menu.
+
+Added OnClose and OnBack to mojo App class - on window phone 8, these are the ONLY places you can call EndApp. By default, OnBack calls OnClose and OnClose calls EndApp, so by default back/close will both end an app.
+
+Added EndApp to Mojo. Use this instead of Error "" if you're using Mojo. Error "" still works.
+
+Added monkeydoc as a textfile type to Ted so you get wordwrap.
+
+Html5 Mojo now handles Audio-less DOMs.
+
+Ted rebuilt with Qt4.8.4 on Windows/Mac - tried on Linux: too hard...
+
+Ted console no longer htmlizes app output.
+
+Fixed JoyHit not reseting.
+
+Added temp SaveState_V66b().
+
+Merged mwtb's html5 SetScissor fix.
+
+Merged Devolonter's bananas tweaks.
+
+Added WIN8_PRINT_ENABLED app config var - defaults to 'false', due to apps with print failing 'app store' guidelines.
+
+Added EnabledKeyboard/DisableKeyboard support to windows phone 8 - not yet windows (store?) 8. Note: 'back' on windows phone 8 ALWAYS clears virtual keyboard, whether or not you call DisableKeyboard in response to GetChar()=27. See EnableKeyboard/DisableKeyboard docs for how to handle this.
+
+Fixed Select in generic code causing internal error.
+
+Fixed Android LoadBitmap so it returns Null instead of throwing exception.
+
+Added file path to 'invalid utf8' warning in os.LoadString; rebuilt trans.
+
+Added "screenSize" to android target manifest android:configChanges setting so apps with targetSdkVersion>=12 don't reset when orientation changes.
+
+Merged Ziggy's mserver tweaks.
+
+***** V70b *****
+
+Added temp LoadState_V66b() to Android target for kludging around LoadState issues. If you have recently updated a <v67 app to >=v67, and users have mysteriously 'lost' their save games, you can use this to recover their old save games. However, you might want to let user decide whether to use 'old' or 'new' save game.
+
+Android LoadState now checks for <v67 state data if >=v67 state data not found - my bad, I renamed the state 'key' in v67.
+
+
+***** V70 *****
+
+Souped up win8 VB performance; fixed several win8 bugs.
+
+Moved all input related constants to mojo.keycodes module.
+
+Put all native code imports inside #If target/lang conditional blocks.
+
+Added some BLAH_IMPLEMENTED checking to extern class decls in brl.
+
+Added InsertBefore, InsertAfter, InsertBeforeEach and InsertAfterEach methods to List.
+
+Semi major Android target change: moved Activity suspend/resume handling code from onSuspend/onResume to onWindowFocusChanged( boolean ).
+
+
+***** V69 *****
+
+Added WIN8_SCREEN_ORIENTATION app config setting; use a bitwise OR of: 1=Portrait, 2=Landscape, 4=Portrait flipped, 8=Landscape flipped.
+
+Added win8/winphone8 ReadPixels, Image.WritePixels to mojo graphics.
+
+Tweaked httprequest, removed httpgetter.
+
+
+***** V68c *****
+
+Added httprequest module - please migrate to this as httpgetter will be removed in V69.
+
+Fixed mac glfw gles20 apps failing to build due to GL_GLEXT_LEGACY define in glfw.h
+
+Fixed xna winphone7/xbox360 builds failing due to FormClosing method.
+
+
+***** V68b *****
+
+Fixed DataBuffer.PeekString in ascii mode return negative char values.
+
+Fixed glfw shift/ctrl keys not working.
+
+Fixed mojo openal audio panning.
+
+Added ApplicationServices.h include to glfw target main.h for CFUrl.
+
+Fixed html5 'susended' misspelling!
+
+
+***** V68 *****
+
+Added Mac (iOS and glfw) versions of OpenUrl.
+
+Fixed some reflection bugs causing build errors.
+
+Added PeekString/PokeString to DataBuffer.
+
+Added brl.httpgetter module for ios/android/glfw.
+
+
+***** V67f *****
+
+Added linux support for JDK_PATH in config.linux.txt.
+
+Fixed broken transcc -modpath arg.
+
+Fixed hex/bin syntax highlighting in Ted.
+
+Added KEY_MENU (android) - check with KeyHit.
+
+Added ANDROID_GAMEPAD_ENABLED for experimental gamepad support.
+
+Added KEY_BACK (android back button) and KEY_CLOSE (glfw/desktop xna window close button). Check for these with KeyHit. Note: XNA KEY_CLOSE pretty dodgy. Clicking close but not actually closing the window seems to put XNA into a weird zombie state, where window has focus etc, but Game.IsActive returns false. Therefore, I'm currently ignoring Game.IsActive for desktop XNA. xbox/wp7 XNA should be a unaffected by this!
+
+Changed #ifdef to #if for TARGET_OS_IPHONE checks in lang.cpp.
+
+Fixed ios apps not installing properly on latest simulator (and attempted to future proof the process a bit).
+
+Removed show-stopping stray back-tick from xnagame.cs.
+
+Cleaned up android back button processing a bit - back button key events no longer eaten by GameView and KEY_ESCAPE/KEY_BACK now dispatched by Activity.onBackPressed() instead.
+
+MODPATH setting added to bin/config.blah.txt config file.
+
+
+***** V67e *****
+
+Trans now displays version.
+
+Fixed audio sample mem management issues on Win8/WinPhone8.
+
+Implemented OpenUrl on Win8/WinPhone8.
+
+Fixed Flash mojo.graphics transform bug.
+
+Fixed XNA KeyChar bug where both key ups/downs were causing a KeyChar.
+ 
+
+***** V67d *****
+
+Fixed html5 canvas mouse coords bug.
+
+Added GetScissor(scissor#[]) and GetColor(color#[]).
+
+Stack removals now 'null out' removed items.
+
+Millisecs back to v66 behaviour - ie: starts at 0 when app starts.
+
+Added millisecs to GetDate.
+
+
+***** v67c *****
+
+Add brl.admob and brl.gamecenter.
+
+Fixed leading 0 on int consts causing octal output bug.
+
+Added #ANDROID_MAINFEST_APPLICATION to allow you to add stuff to the <application> block of manifest, eg: <activity...> for admob.
+
+Added #LIBS to android/ios target - only .jar supported on android (all copied to project 'libs' dir during build) and .h, .a, .framework on ios (all copied to project 'libs' dir, which is by coincidence in project include/lib path) - features unholy hacking of a .pbxproj file.
+
+Fixed preprocessor #If/#Else/#End bug(s).
+
+Fixed issue with blah.const style code where blah was being evaluated even if it had no side effects (eg: if var were a var).
+
+Main() not found now errs out on line 1 of main source file.
+
+Mojo now creates devices just before OnCreate called (instead of in App ctor) so DeviceWidth/DeviceHeight etc can init themselves properly.
+ 
+Fixed Stream.Skip offset/count param order.
+
+CreateImage on flash now creates transparent image.
+
+Android accelerometer now allows for device orientation.
+
+
+***** V67b *****
+
+Added SetScissor to win8 targets.
+
+Ted changes: centered find scrolling; http:// links in docs now open in external browser.
+
+Added some rectangle/array error checking to DrawImageRect, ReadPixels, Image.WritePixels.
+
+'monkeytarget' module now always imported - targets should always include a monkeytarget module, even if it's a NOP. No top-level monkeytarget modules outside of targets please!
+
+Print now a NOP in win8/winphone8 so apps validate - will fix.
+
+Fixed the winphone8 target project ARM settings.
+
+Refactored the new target stuff.
+
+Fixed the reflection bug in transcc.
+
+
+***** V67a *****
+
+BIG CHANGES!
+
+Mojo app and input modules are now pure Monkey.
+
+brl.game declares native BBGame class for targets to implement.
+
+Extern static class member functions must no longer be 'pre-munged'.
+
+Added HideMouse/ShowMouse/OpenUrl to mojo.app which will no doubt clash with 3rd party efforts.
+
+Renamed trans to transcc.
+
+Majorly overhauled target system! Target dirs now contain:
+
+TARGET.MONKEY - target control file
+template/ - template project to be copied to app.build folder when target built.
+modules/ - modules specific to target.
+
+TARGET.MONKEY should contain 3 decls:
+
+TARGET_NAME="Glfw Game"		'name of target to appear in IDE combo box and to be used with Transcc.
+TARGET_SYSTEM="glfw"		'target system - this ends up in app config TARGET var.
+TARGET_BUILDER="glfw"		'builder to use for target, same as system for now.
+
+You can now 'copy' a target simply by copying a target dir and changing TARGET_NAME. Target builders are hardcoded into transcc.
+
+Added new 'game' module to brl that declares a low level BBGame class. This is roughly equivalent to the App/Input bits of old Mojo and is implemented by new targets - see bananas/mak/bbgametest.
+
+Majorly overhauled Mojo! Mojo native code now contains graphics/audio code only. App/input stuff is now pure Monkey and based on brl.game BBGame class.
+
+Added ResetInput to mojo.input.
+
+Added win8 and winphone8 targets and win8 system/builder.
+
+Added win8 mojo module.
+
+opengl.databuffer removed - opengl module now uses brl.databuffer instead.
+
+glfw updated to 2.7.7
+
+Flash target now sends Print output to an html textarea via ExternalInterface.
+
+Trancc android builder now captures log output when app is run so you should be able to see android Print statements now. Note that this can leave the .build dir 'locked' by the android system on windows, so you may have to kill the 'ADB' process if you want to delete the .build dir - but I think it's worth it.
+
+A few tweaks to Ted: Autocaps now disabled inside block rems; kill proc should be faster/ruder; tweaks to proc output so stdout>stderr.
+
+
+***** V66 *****
+
+Modules
+
+brl - added filestream module.
+
+psm/xna - tweaked update rate logic, should be a bit 'cleaner' now esp. on PSM. Added XNA_VSYNC_ENABLED config var (defaults to false) to XNA. Use this + 60FPS update rate to get 60FPS on WP7.
+
+xna/psm mojo - changed SaveState/LoadState filename to '.mojostate'.
+
+
+Targets:
+
+Added monkey://internal/ support to glfw, stdcpp, android, ios, xna and psm targets.
+
+Fixed ios view controller orientation issue with ios6.0.
+
+
+Trans (V1.42):
+
+Improved support for spaces in preprocessor stmts.
+
+ios target now creates a Documents dir on simulator for use by //internal/.
+
+
+***** V65 *****
+
+Modules:
+
+mojo - Added async loaders.
+
+mojo - fixed dependancies on bool config settings - changed lots of =="true" to =="1".
+
+reflection - no longer sets reflection filter to '*', so by default nothing will be reflected even if you import reflection.
+
+brl.databuffer - android version no longer supports 'direct' ByteBuffers.
+
+Added brl modules: brl.asyncevent, brl.asyncstream, brl.asynctcpstream, brl.asynctcpconnector, brl.ringbuffer.
+
+
+Targets:
+
+Updated GLFW to 2.7.6 for Mac joypad support - added IOKit framework to glfw xcode project.
+
+Converted all CONFIG.TXT files to monkey preprocessor source.
+
+
+Trans (V1.41):
+
+Target CONFIG.TXT files are now monkey files that are preprocessed only. This means you will need to prefix each CONFIG.TXT line with '#' and enquote params. This is a definite 'delete/update' .build dir change.
+
+Added preprocessor config var += operator, mainly for use with adding reflection filters.
+
+Preprocessor config vars can now be modified, UNTIL they are used - ie: once a config var is evaluated for use with #If, #Print, #Error #blah= etc, it cannot be modified.
+
+Added String.ToChars:Int[]() method.
+
+
+Ted (1.7):
+
+Added find in files to folder context menu.
+
+
+***** V64 *****
+
+Modules:
+
+Moved BoxInt, ArrayBoxer etc from reflection to monkey.boxes. Forgot to update docs.
+
+Added brl modules: brl.databuffer, brl.stream, brl.datastream, brl.tcpstream. Haven't retired opengl.databuffer yet.
+
+
+Targets:
+
+Added mingw support to glfw via CONFIG.TXT setting #GLFW_USE_MINGW="true". Note: Recommended mingw gcc/g++ version is 4.6.1. I tried 4.7.1 but had the occasional random app crash.
+
+Added BINARY_FILES filter to CONFIG.TXT files.
+
+Android - added INTERNET permissions to AndroidManifest.xml template.
+
+Windows glfw - added WinSock lib to msvc project.
+
+
+Trans (V1.40)
+
+Added mingw support to glfw.
+
+Added BINARY_FILES handling.
+
+
+***** V63 *****
+
+Modules:
+
+mojo.graphics - Added CreateImage, ReadPixels, Image.WritePixels.
+
+android mojo.graphics - Fixed ancient 'textures don't render first time' bug!
+
+
+Targets:
+
+pss target - removed.
+
+
+Trans (V1.39)
+
+Removed pss target.
+
+
+***** V62 *****
+
+Modules:
+
+android mojo - MOJO_HICOLOR_TEXTURES config setting now actually does something! Set to "true" for 32 bit textures, "false" for 16 bit. Yep, I know it's badly named, HICOLOR used to mean '16bit'. Only applies to Android.
+
+c++ monkey.lang - LoadString now assumes UTF-8 by default (ie: if there's no BOM) and SaveString now saves (BOM-less) UTF-8 too. NOTE: This is pretty much the standard, and most targets assume UTF-8 like this. Ted also now behaves this way - ie: source files are assumed to be UTF-8 unless there's a BOM. You may have issues with files saved from Monk, which does not UTF-encode files (or write a BOM marker) unless the file contains at least one char >255. This means files saved from Monk with 'accented' euro-chars (which are <256) may not be UTF-encoded, and you'll have problems loading such files into Ted or using LoadString. I may eventually add a 'file encoding' option to Ted to deal with this but in the meantime you'll have to copy 'n' paste around it. One trick would be to paste a single 'Asian' char into a source file in Monk before saving which will trigger UTF-encoding.
+
+flash mojo - kludged around paused/resumed audio not looping from start issue. Not pretty, and seems to have increased loop lag a tad but wotkanyado.
+
+c++ monkey.lang - fixed bug when resizing arrays of arrays.
+
+
+Targets:
+
+glfw - added *.ogg to SOUND_FILES and MUSIC_FILES in target CONFIG.TXT.
+
+android - LoadString now assumes UTF-8 by default (ie: if there's no BOM).
+
+
+Trans (V1.38)
+
+Rebuilt for UTF-8 tweaks.
+
+
+Ted (V1.6)
+
+Added help index.
+
+
+***** V61b ******
+
+Modules:
+
+pss/psm mojo - added discard to surface.
+
+flash mojo - fixed stream of mousehits bug when app lost/regained focus.
+
+glfw mojo - added KEY_TILDE and KEY_QUOTES support.
+
+lang.cpp - tweaked GC, added CPP_GC_MARK_RATE and CPP_GC_TRIGGER config vars.
+
+
+Targets:
+
+Upgared Mac ios and glfw target projects to xcode4.4.
+
+Added psm target - will replace pss target in next release so upgrade NOW! Check your PSM_PATH in bin/config.winnt.txt is set correctly before use.
+
+glfw - Updated GLFW lib to 2.7.5
+
+
+Trans (V1.37):
+
+Fixed debug array index check bugs on js/as.
+
+Fixed bug with reflection filter and mixed cased module names.
+
+Fixed comment at end of preprocessor line parsing bug.
+
+
+***** V60 ******
+
+Modules:
+
+lang.cpp - improved debug performance.
+
+monkey.lang - added support for exceptions. Exception objects must extend 'Throwable'; No 'Finally'; See lang ref for more.
+
+
+Targets:
+
+Added support for exceptions.
+
+
+Trans (V1.36):
+
+Improved debug performance.
+
+Added support for exceptions.
+
+
+***** V59 ******
+
+Modules:
+
+c++ lang - added debug handling.
+
+glfw mojo - LoadSound now uses glfw target loadSound.
+
+opengl - Fixed various issues.
+
+lang.cpp/os.cpp - Fixed several issues with empty std::vectors.
+
+
+Targets:
+
+glfw - added stb_vorbis loader (doesn't stream yet) and loadSound/unloadSound functions
+
+
+Trans (v1.35):
+
+Added debug info to c++ translator.
+
+
+***** V58 *****
+
+Modules:
+
+mojo - Added (highly) experimental pss support!
+
+opengl - Fixed leak in c++ LoadImageData.
+
+reflection - Fixed bug where class member const/function names were fully qualified.
+
+java lang - String.Join now uses StringBuilder instead of StringBuffer.
+
+
+Targets:
+
+Pss - Added! Added config var PSS_PATH="${PROGRAMFILES}\SCE\Pss" to bin\config.winnt.txt
+
+Android - MonkeyData.loadString now uses StringBuilder instead of StringBuffer.
+
+
+Trans (v1.34):
+
+Fixed scoping bug where code could access globals via class members.
+
+Fixed some error line bugs.
+
+
+***** V57 *****
+
+Modules:
+
+xna mojo - scissor rect now clipped to device rect.
+
+mojo graphics - implemented muddy_shoes' GrabImage bugfix.
+
+android mojo - fixed paused music restarting at OnResume.
+
+ios mojo - added kludge to detect 'dead' touch events.
+
+
+Trans (v1.33)
+
+Fixed Alias with primtive Int, Float, String types, eg: Alias MyInt=Int,MyString=String etc.
+
+
+***** V56b *****
+
+Added app config var MOJO_AUTO_SUSPEND_ENABLED (defaults to false) to auto suspend app if it loses input focus. Apps always auto-suspend if minimized. Doesn't apply to ios/android.
+
+
+Trans (v1.32)
+
+Fixed iOS target so it's xcode 4.3.1 aware - NOTE: you will also have to run this from the command line after installing xcode 4.3.1:
+
+sudo /usr/bin/xcode-select -switch /Applications/Xcode.app
+
+
+***** V55 *****
+
+Modules:
+
+reflection - added recursive? flag to ClassInfo methods GetConst(s), GetGlobal(s), GetField(s), GetMethod(s) and GetFunction(s).
+
+android mojo - setEGLContextClientVersion now uses reflection for backward compatibility with the elderly Android set.
+
+cpp monkey.lang - optimized empty arrays.
+
+cpp monkey.lang - fixed incremental GC bug with empty arrays.
+
+
+Trans (v1.31):
+
+Removed yucky gc_iptr interface pointer container.
+
+Fixed bug with reflection and multi-dimensional arrays.
+
+
+***** V54c *****
+
+Monk
+
+Added Set, FloatSet, IntSet, StringSet to keywords.
+
+Modules:
+
+mojo xna - WP7 touch emulates mouse.
+
+mojo xna - added WP7 support for fullscreen via XNA_WINDOW_FULLSCREEN_PHONE app config setting, defaults to true.
+
+reflection module added!
+
+mojo xna - added WP7 support for accelerometer.
+
+mojo graphics - DrawText alignment offsets now Floor()ed.
+
+xna mojo - music functions now disabled if MediaPlayer.GameHasControl is false at startup.
+
+xna mojo - added WP7 support for multitouch.
+
+cpp monkey.lang - fixed double fclose() in LoadString.
+
+monkey.lang - added String.FromChars( chars:Int[] )
+
+
+Targets:
+
+xna - Added XNA_WINDOW_FULLSCREEN_PHONE=true to xna/CONFIG.TXT
+
+xna - Target solution now includes windows phone project.
+
+xna - Added XNA_ACCELEROMETER_ENABLED=true to xna/CONFIG.TXT
+
+glfw - tweaked compiler settings a bit so debug builds go a bit faster.
+
+stdcpp/glfw/ios - moved #includes to separate main.h files. Hoping to precompile these eventually...
+
+
+Trans (v1.30):
+
+Fixed bool boxing.
+
+Fixed reflection filter (pt 1 no doubt).
+
+Reflection support added!
+
+XNA builds now only build Windows version - much faster than building both Windows/XBOX!
+
+Added more flexible interface casting - interfaces can now be cast to and from ANY class/interface. I thought this choked AS, but now doesn't seem to...
+
+Fixed C++ cast-interface-to-object bug.
+
+Added String.FromChars( chars:Int[] )
+
+
+***** V53 *****
+
+Monk:
+
+Now uses new wiki-docs!
+
+
+Modules:
+
+map - Added 'Add' method - like 'Set' but wont modify map if key already exists.
+
+map - Modified 'Set' to return bool result.
+
+xna mojo - Fixed auto controller detection.
+
+opengl - Fixed non-multiple-of-4-length DataBuffers crashing on html5.
+
+
+Targets:
+
+mojo - loadString now uses java's String( byte[] ) ctor. (NOTE: DIDN"T MAKE IT TO RELEASE - JUST AS WELL AS IT DIDN'T WORK!)
+
+
+***** V52(f) *****
+
+Modules:
+
+mojo - added NOP versions of AccelX/AccelY/AccelZ to glfw, flash and xna targets.
+
+glfw opengl - added glActiveTexture and glClientActiveTexture to gles11.
+
+android mojo - implemented secondgear's fix for handling back button events on pre 2.0 versions of android.
+
+html5 mojo - added HTML5_SUSPEND_ON_BLUR_ENABLED="false" config setting.
+
+html5 mojo - Overhauled audio system. Fixed audio crash when suspending app.
+
+opengl - added GLES2.0!
+
+android - monkey.lang now uses System.out.println for 'Print' and  Mojo redirects stdout to android Log.
+
+android mojo - added auto padding for simple single frame images to prevent crud on right/bottom side.
+
+opengl - added fallbacks to extensions for VBOs and compressed textures to gles11.glfw.cpp.
+
+opengl - fixed gles11 glNormalPointer wrapper.
+
+
+Trans (1.29):
+
+Fixed assign op /= with ints in JS returning fractions.
+
+Fixed file filter code.
+
+Added native gl kludges to android for gles20 apps. Allows use of gles20 on android 2.2. Use native code - beware. Enable with ANDROID_NATIVE_GL_ENABLED=true in CONFIG.TXT
+
+Added the ability to set config vars in preprocessor land.
+
+Converted html5 makemeta.cpp to James' version.
+
+
+***** V52(b) *****
+
+Modules:
+
+android mojo.input - added blind kludge for EnableKeyboard.
+
+os - Changed CopyFile to use os copyfile/CopyFileW.
+
+html5 mojo - Removed cookie hack from LoadState/SaveState.
+
+opengl.gles11 - Added LoadImageData for use with glTexImage2D etc.
+
+android mojo.graphics - changed gl calls to use GLES11 class instead of GL11 object.
+
+mojo.audio - added PauseChannel, ResumeChannel, PauseMusic, ResumeMusic.
+
+mojo.graphics - added support for IMAGE_FILTERING_ENABLED to appropriate targets. See CONFIG.TXT files.
+
+
+Targets:
+
+xna - text files no longer embedded.
+
+xna - data dir now created directly to xna Content dir.
+
+ios, glfw - INCREMENTAL_GC now defaults to 1.
+
+html5 - loadString now uses XMLHttpRequest.
+
+flash - added type="..." to <embed> tag
+
+glfw, flash, android, xna, glfw, android - added IMAGE_FILTERING_ENABLED setting to config files.
+
+
+Trans (1.28)
+
+bin/makemeta app gone.
+
+Text files no longer embedded in html5.
+
+Added 'data file filters' to CONFIG.TXT files.
+
+Added support for per-target CONFIG.TXT config files. 
+
+
+***** V51 *****
+
+Modules
+
+Added opengl module!
+
+html5 mojo - fixed AccelZ.
+
+android mojo - fixed soft keyboard not appearing in landscape mode (hopefully!) and predictive/multichar text entry. Still something up with backspace on my LG though...
+
+
+Monk (0.36)
+
+Added Final keyword.
+
+
+Trans (1.27)
+
+Added -check option to trans to just do a test parse/semant/translate.
+
+Added check for object comparisons.
+
+Added Final attribute for class/method decls.
+
+
+***** V50 *****
+
+Modules:
+
+mojo.graphics - added DrawPoint(x#,y#).
+
+html5 mojo - added touch/accel support - note: touch emulates mouse and vice versa.
+
+android mojo - added touch event opts as suggested by Samah.
+
+
+Targets:
+
+android - added inPurgable bitmap option to LoadBitmap to conserve memory.
+
+
+***** V49 *****
+
+Modules:
+
+dom - added skidracers stylesheet stuff.
+
+flash mojo - fixed alpha bug introduced by fix for dark rendering.
+
+monkey.lang, c++ mojos - added tweaks for incremental GC.
+
+
+Trans (1.26):
+
+Fixed generic class downcast parsing bug.
+
+Added check for naughty assignments to indexed string chars.
+
+Cpp translator now emits incremental gc friendly code - must be enabled via appropriate target config.h file.
+
+
+***** V48 *****
+
+Modules:
+
+flash mojo - fixed bug with 'dark' line/oval/poly rendering.
+
+glfw/android mojo - Improved consistency of LoadString/LoadState/SaveState.
+
+ios mojo - Fixed issue with backspace not working when no chars typed.
+
+ios mojo - added DISPLAY_LINK_ENABLED to ios config.h file to enable 60hz 'vsync' kludge. Defaults to 'off' due to issues with input lag.
+
+
+Trans (1.25, forgot to bump from 1.24...)
+
+Moved ios target config #defines to separate config.h file.
+
+flash target - text files now incbin'd using [Embed] insetad of string literals.
+
+Fixed Array resize on xna and java returning string/array arrays containing nulls.
+
+
+***** V47d *****
+
+
+* YOU MUST UPDATE ANDROID SDK TO LATEST VERSION - currently this is Android SDK tools rev 14, Android SDK platform tools rev 8 according to SDK manager.
+
+
+Modules:
+
+monkey.lang - added autoscrolling Print to js target.
+
+mojo.graphics - Changed XNA PlayMusic to use MediaPlayer.
+
+ios mojo - Changed touch handling to only process touches for view.
+
+xna mojo - Fixed windows phone back button bug.
+
+
+Monk (0.35)
+
+Applied MaxIDE tab width & SaveText fixes and recompiled with new MaxGUI.
+
+
+Trans (1.24)
+
+Added app auto-run for Android.
+
+Fixed/cleaned up name mangling issues. Still not perfect, probably never will be given range of targets.
+
+Fixed android target and android trans to work with latest android version.
+
+Fixed Select 'tmp' bug with multiple selects in same block.
+
+Fixed object cast bug with new generics.
+
+XNA target changed to treat WAV files as sounds, MP3 and WMA files as music.
+
+Generics system majorly overhauled, now uses 'reification' instead of 'type erasure'.
+
+ios target - Changed touch detection to touchesBegan, touchesEnded etc. for better compatibility with game center etc. Enabled multi-touch in UIView via xib!
+
+
+***** V46 *****
+
+Modules:
+
+monkey.stack - Fixed RemoveEach bug.
+
+mojo.input - Fixed XNA gamepad detection. Depends on use of KeyDown/KeyHit to determine what keys can 'detect' a gamepad.
+
+mojo - Fixed iOS pathForResource issue with sutff in subdirs not loading.
+
+mojo - Removed unused GamerServices stuff from XNA version.
+
+
+Trans (1.21)
+
+xna target - Removed unused GamerServices stuff from XNA version.
+
+FLASH_PLAYER setting in bin/config.blah.txt now optional. If present, it is used to open target .swf file. Otherwise, HTML_PLAYER is used to open target .html file.
+
+Fixed C++ issue with literal arrays of interfaces.
+
+Fixed Actionscript return/reachability issue.
+
+Fixed ~=
+
+Mod can now handle floats.
+
+Fixed x op= y type inconsistencies with x=x op y.
+
+Fixed C# float<->string conversions to be 'culturally insensitive'!
+
+
+***** V45c *****
+
+Monkey IDE:
+
+Added magic code (xattr) to prevent MacOS mserver from stalling due to 'app was downloaded for the internet...' warning.
+
+
+MServer:
+
+Fixed MServer not relaunching cleanly immediately after shutdown (setsockopt SO_REUSEADDR).
+
+
+Modules:
+
+monkey.random - Fixed Rnd#() to always (let's hope...) return values < 1.
+
+monkey.list - added FirstNode, LastNode, NextNode, PrevNode. Added some debug mode checks for empty lists.
+
+
+Trans (1.20)
+
+stdcpp builds now uses doubles!
+
+Extern classes that extend Null no longer GC'd by C++ target.
+
+Added Exp() to monkey.math
+
+Fixed C#/Java handling of abstract classes/methods so they emit actual abstract native decls.
+
+Fixed bug where abstract implementation checking was ignoring method identifiers!
+
+
+***** V45b *****
+
+Modules:
+
+mojo.graphics - html5 ignores F11-F12 for fullscreen/debugger support.
+
+
+Trans (1.19)
+
+Fixed strict mode error with abstract method's not returning a value.
+
+
+***** V45 *****
+
+Modules:
+
+mojo.input - HTML5 target now recognizes LMB, RMB, MMB.
+
+mojo.input - Added EnableKeyboard, DisableKeyboard for SIMPLE virtual keyboard support on iOS and Android ONLY.
+
+monkey.map - modified Map.Compare() method so it takes 'K' (ie: Key) type params instead of plain objects.
+
+mojo.input - changed KEY_BACKSLASH to 220.
+
+mojo.graphics - fixed non-pow2 tex handling on ios and glfw.
+
+
+Trans (1.18)
+
+HTML5 target HTML now disables RMB popup menu for canvas.
+
+Trans now built in release mode (was debug) for faster compiling.
+
+Fixed spaces in [].
+
+Added check for 'Super' calls to abstract methods.
+
+Cleaned up debug mode, you should now get a stack trace for every (Monkey) null object, array index or Error() error in debug mode.
+
+Cleaned up flash target a bit - bitmap creation is now in mojo code, not target code.
+
+Validates abstract methods of non-instanced classes too now - used to only validate instanced (ie: Newed) classes.
+
+Fixed strict mode not complaining about non-void functions without terminating return.
+
+Fixed void->bool conversions causing crash.
+
+Improved unicode handling of os.LoadString, os.SaveString and mojo.app.LoadString.
+
+
+***** V44 *****
+
+Modules:
+
+mojo.input - fixed some CHAR_ codes.
+
+mojo.graphics - Tweaks all round, and fix for android 16bit 1555 fmt textures.
+
+monkey.math - Added 'radian' versions of trig functions, named Sinr, Cosr etc. See docs.
+
+monkey.lang - fixed String.Split with "" separator on C++, C#, Java.
+
+mojo.graphics - optimized GLFW and iOS graphics a bit.
+
+Added docs for DrawPoly.
+
+
+Trans (1.17):
+
+Fixed various Lion issues.
+
+Fixed trans issue with void functions not popping scope stack.
+
+Added .trim() to java string->numeric conversions to prevent *some* number format exceptions. Strings should still contain numeric values only.
+
+Added radian version of trig functions to translators. Use 'r' suffix for radian versions...
+
+Added -O3 (speed optimizations) for release mode stdcpp builds.
+
+Added check for divide by zero when evaluating consts.
+
+
+***** V43 *****
+
+Modules:
+
+Added os module - see docs.
+
+Added DrawPoly( xy_verts#[] ).
+
+Android mojo now requires GL1.1.
+
+Implemented VBOs in android mojo.
+
+Changed lang.java print 'log tag' to [Monkey] - ie: removed WS.
+
+iOS mojo back to using imageNamed for image loading.
+
+
+Trans (1.16):
+
+Added 'uses feature gl1.1' to android manifest.
+
+Added user edittable HICOLOR_TEXTURES global bool var to MonkeyGame.java for android target.
+
+Another fix for issues with ++, -- in output code.
+
+Fields cannot override existing field of same name.
+
+Fixed +=, -= etc crash with properties.
+
+New C#/Java string arrays now inited with empty strings, not nulls.
+
+More fixes for c++ interfaces.
+
+Unicode comments now allowed in Monkey source.
+
+XNA target now handles Content.Load<T> exceptions and returns null.
+
+Added ; statement separator - use to separate multiple statements on the same line.
+
+
+***** V42b *****
+
+Fixed C++ array of arrays GC issue in monkey lang.cpp
+
+
+***** V42 *****
+
+Modules:
+
+More tweaks to android mojo VBOs.
+
+Optimized android mojo blending for opaque rendering.
+
+Fixed android mojo r,g,b byte ordering for non-alpha images.
+
+
+Trans (1.15):
+
+Added WMA audio format support to trans/XNA.
+
+Fixed trans crashing if no Main() declared.
+
+Fixed consts in interfaces crashing as/java/cs translators.
+
+Fixed conversion C++ interfaces to objects for use with generics.
+
+Fixed float->string conversion precision issue.
+
+
+***** V41 *****
+
+Modules:
+
+android mojo implemented 'fast' IntBuffer vertex buffers - see: http://code.google.com/p/android/issues/detail?id=11078
+
+ios mojo audio now using AVAudioPlayer for music.
+
+
+Trans (1.14):
+
+Flash var name munging for embedded data now takes file extension into account.
+
+Fixed more C++ interface gc issues.
+
+Fixed C++ generic array cast bug.
+
+Fixed '--' in translator output.
+
+
+***** V40 *****
+
+Modules:
+
+Implemented dguy's ios mojo fix for LoadString crash with non-existent files.
+
+monkey - removed resource module.
+
+mojo graphics/audio - Added Discard method to Image and Sound (these are still GC'd though).
+
+iOS mojo audio - tweaked ExtAudio based loader to attempt to deal with popping mp3s.
+
+input - Fixed KEY_JOYBLAH typo.
+
+
+Trans (1.13):
+
+Addeds support for New with Extern classes - no ctors allowed for now (ie: default only)!
+
+Fixed C++ GC handling of interfaces.
+
+
+***** V39c *****
+
+Tools:
+
+MServer now uses 'etags' for detecting modified files.
+
+
+Trans (1.12):
+
+Fixed parenthesis mismatch error with multiline expressions.
+
+Trans compiler back to debug build for internal err stack dump.
+
+Fixed extern overriding extern causing internal err bug.
+
+Added radix 10 param to parseInt for JS/AS translators.
+
+Fixed method munging bug.
+
+
+***** V39b *****
+
+Tools:
+
+Added Difference's info.plist to Mac monk.
+
+Added thread per connection support to mserver.
+
+
+Trans (1.11):
+
+Fixed name munging of local vars.
+
+
+***** V39 *****
+
+Modules:
+
+Mojo SetColor now affects images.
+
+Added Compare method to String type.
+
+Fixed DrawImageRect with 0 sized src rect in Flash.
+
+Android mojo now works with API level 3.
+
+Fixed Android music.
+
+
+Trans (1.10)
+
+Fixed various parser issues.
+
+Added mserver, minimal monkey server. Very minimal.
+
+Android target now works with API level 3.
+
+Added 'm4a' (ie: aac) as recognized audio format.
+
+Added interfaces.
+
+Majorly cleaned up generics.
+
+Added Alias directive.
+
+Added #Error directive.
+
+
+***** V38 *****
+
+Modules:
+
+lang.cpp - Fixed C++ GC stack thrash crash.
+
+iOS mojo.audio - reverted to old custom WAV loader for wav files due to mystery 'pops' in ExtAudioFileRead based loader.
+
+
+Trans (1.09):
+
+Fixed weird bug with MSBUILD using 'Platform' Env var.
+
+Fixed astranslator array resize not handling bool/array arrays!
+
+Implemented JS/AS array resize tweak.
+
+Fixed GLFW target WINDOW_TITLE.
+
+Fixed trans/flash target file type checking to work with upper/lower exts.
+
+cpptranslater - Fixed C++ GC stack thrash crash.
+
+
+***** V37 *****
+
+Modules:
+
+lang.cpp - MSVC version now uses SEH, seems to be the only way to catch int divide by 0.
+
+Mojo GLFW/Android/iOS - no more embedded text files: LoadString now uses real files.
+
+Mojo GLFW - added joystick support. No d-pad yet though...
+
+Mojo iOS - fixed new sample loader to use 3.2 compatible calls only.
+
+
+Trans (1.08):
+
+Fixed default GLFW target so release build links with static CRT.
+
+Module munging fixed - you can now have 2 modules with same name.
+
+Cleaned up preprocessor a bit.
+
+Added #Error directive.
+
+Fixed class function overriding.
+
+Fixed field initializers accessing self methods.
+
+
+***** V36 *****
+
+Modules:
+
+Fixed nasty crash bug in Map.
+
+
+Monk:
+
+Disabled ParseError for gcc errors.
+
+Replaced a bunch of \n's with ~n's.
+
+
+Trans (1.07):
+
+Fixed const eval of negative vals.
+
+Fixed INTLIT '%' prefix.
+
+Fixed new override bug for overrides that skip a class.
+
+Fixed EvalFunc bug that allowed ()().
+
+Fixed infinite loop with unterminated string literal.
+
+
+***** V35 ***** 
+
+Modules:
+
+Mojo iOS sample loader now uses audio toolbox for mp3 support.
+
+Mojo Html5 SetScissor fixed.
+
+Added Mojo Music commands - see mojo.audio
+
+Mojo Android volume control now always sets media volume.
+
+
+Trans (1.06):
+
+Fixed float literal 'e' notation.
+
+Fixed BalanceTypes to generate an error instead of returning null.
+
+Rearranged and tidied up post semant class validation code.
+
+Fixed ObjectType.EqualsType to use new ClassDecl.EqualsClass method for generic class comparison fix.
+
+
+***** V34b *****
+
+Quick fix release for nasty return stmt bug!
+
+
+***** V34 *****
+
+Modules:
+
+LoadState/SaveState now only use cookies on FF and IE for 'file://' document.URLs.
+
+Added a Backwards() method to List<T> and Stack<T> that allows you to iterate through elements backwards with an EachIn loop.
+
+
+Trans (1.05):
+
+Fixed non-void abstract methods in strict mode complaining about missing return expression.
+
+Fixed IntType.ExtendsType infinite recursion crash.
+
+Added SCREEN_ORIENTATION to android CONFIG.TXT.
+
+Fixed overloading method not used overloaded method's munging.
+
+
+***** V33 *****
+
+Modules:
+
+Added experimental DOM module - see gldemo.monkey in modules/dom.
+
+Tweaked html5 update rate timing code - shouldn't 'leak' time anymore and may be smoother on some browsers? More work needed here...
+
+Only Chrome/Safari use localStorage for LoadState/SaveState, others now use cookies. IE9 doesn't like localStorage at all, and FF doesn't like it with file:// documents.
+
+iOS accelerometer now tries to compensate for UI orientation - you should still lock accelerometer 
+games to a single orientation though.
+
+Fixed iOS screen saver with accelerometer based games.
+
+Changed some android defaults in manifest - fullscreen theme + no reset on orientation change.
+
+Fixed glPixelStorei unpack alignment for GLFW target. Added fox to iOS too.
+
+Fixed line thickness scaling in Flash.
+
+Added checks to mojo graphics to ensure rendering commands are only performed inside OnRender.
+
+Fixed xna mojo reach mode additive blending.
+
+
+Trans (1.04):
+
+Android manifest and various other files moved to .build/android/templates - edit these, not the generated copies in .build/android.
+
+Android app renamer added - see .build/android/CONFIG.TXT after first build.
+
+Split trans.monkey driver into target-per-file layout.
+
+Fixed array indices not being int-ized.
+
+
+***** V32 *****
+
+Modules:
+
+JS/AS now use built-in join().
+
+Implemented custom string_replace for JS and AS targets to avoid regex issues.
+
+Flash target can now be used mojo-less - this is probably a pointless exercise, will revisit eventually.
+
+Android mojo nows uses GL!
+
+Added simple glfw LoadState/SaveState.
+
+Fixed XNA shift/control input issues.
+
+Mojo font now loads at startup.
+
+LoadImage/LoadSound errors consistently return Null objects.
+
+Flash data embedded! Will eventually be selectable. Note: flash file names must be valid identifiers for now.
+
+Error "" added - use to 'exit app'.
+
+Android target 'screensaver' disabled via android:keepScreenOn="true" in layout/main.xml
+
+App suspend/resume improvements.
+
+
+Trans:
+
+Bumped to v1.03.
+
+Fixed default multi-dim array values in java/c#.
+
+Fixed unary expr after EOL causing syntax error.
+
+'Then' now also allowed after 'Else If'.
+
+Fixed Shl=, Shr=- and Mod=.
+
+Fixed overriding methods not matching superclass methods. 
+
+Fixed default ctors being generated when suitable ctor with defaults params already exists.
+
+Func/var decls can now handling EOLs after commas.
+
+
+***** V31 *****
+
+NOTE! You will need to delete any existing .build/xna builds!
+
+Add some mak samples by yours truly.
+
+Fixed html5 support for negative width/height rects/ovals/imagerects.
+
+Removed unimplemented DrawPoint from mojo.graphics.
+
+Added OnSuspend/OnResume. XNA/iOS/Android only for now. See bananas/mak/suspendtest/suspendtest.monkey
+
+Removed WP7 project from default XNA target project for XP users.
+
+XNA mojo now uses IsolatedStorage for LoadState/SaveState for WP7 compatibility.
+
+Fixed XNA non-clamped textures causing runtime exception with non-POT textures and "Reach". 
+
+
+***** V30 *****
+
+Rebuilt trans_macos to work on 32 bit Mac CPUs.
+
+Changed trans stdcpp target to produce -arch i386 targets only for now.
+
+Fixed dodgy preprocessor error reporing.
+
+Began work on XNA Windows Phone 7 support.
+
+Enabled 'Reach' in XNA - XNA apps should work on wider range of HW.
+
+Fixed Consts in funcs crashing compiler.
+
+Fixed ToArray methods in std.stack
+
+Fixed astranslator crashing when generating return stmt for abstract void methods.
+
+
+***** V29 *****
+
+Release build!
+
+
+***** V28 *****
+
+Misc...
+
+
+***** V27 *****
+
+Monk now only requests build target first time build/run is used - select plain 'build' to change target.
+
+More docs, samples, tutorials etc.
+
+
+***** V26 *****
+
+Added math.Log()
+
+Fixed C# Ceil()
+
+
+***** V25 *****
+
+It's all a blur...I can't remember...sanity check version release!
+
+
+***** V24 *****
+
+Experimental: Added a top level mojo module that imports all mojo.* modules for you.
+
+Experimental: Added a top level monkey module that imports all monkey.* modules for you - this is imported by default.
+
+Experimental: 'std' module is now 'monkey'.
+
+Renamed List/Vector.Remove to RemoveEach
+
+Removed 'Module', 'Emit'
+
+Added current dir relative imports - tweaked import/module system.
+
+
+***** V23 *****
+
+Added .xml and .json as valid text file types.
+
+Fixed monk for new error formatting.
+
+Change error format to:      FILE<LINE> : Error : Blah etc
+
+Added error for accessing field from another field - sorry folks, but as/xna don't approve! Might look into this again one day though.
+
+Fixed LoadString with files in subdirs.
+
+Added enquoting of '\' for data strings.
+
+Fixed boxing/unboxing weirdness causing strange 'method new not found' errors.
+
+
+***** V22 *****
+
+Added identifier not found case hints.
+
+Fixed duplicate method/functions not being detected (overload resolve logic was just taking the first match!)
+
+Fixed loose array casts.
+
+Added "ElseIf" to go with "EndIf"
+
+Addde support for End [If], End [While] and End [Next].
+
+Print is now a 'normal' statement.
+
+Break gone for good - renamed to Exit.
+
+Fixed Android invalid DeviceWidth/DeviceHeight in OnCreate.
+
+Adding checking for non-ident file names.
+
+Fixed 'missing return' with no err info.
+
+Added -cfgfile= option to trans for multiple config file support. Config files should still be in the same dir as trans.
+
+Changed trans so text files are loaded/saved in binary fopen mode instead of text. This means no more conversion of EOLs, so text files should contain exactly the same chars regardless of platform. text mode had been converting \r\n to \n on Windows but not on Mac, leading to potential Mac only issues.
+
+Fixed 'string too long' MSVC error with big text files.
+
+
+***** V21 *****
+
+Module reference is now Chrome friendly.
+
+iPhone Simulator now killed each time before launch, for more reliable app updates. A bit experimental!
+
+You can now use ${BLAH} to insert env vars into config file paths.
+
+Added support for non-local index vars in for loops - please test!
+
+Cleaned up GLFW a bit - fixed weird chars in title bar in release mode, and added defines at top of main.cpp for easier display config.
+
+
+***** V20 *****
+
+George now generates search index - nice!
+
+Clean up glfw input handling a bit and added some CHAR defines for converting 'unprintable' keys to chars for GetChar. Please use CHAR_ETC consts for now - the <32 ones will probably stay, but the others may change.
+
+Monk uses trans valid targets info to fill in its target combo box.
+
+trans with no args now dumps 'valid targets' info, deduced from config file paths. Not foolproof though!
+
+More error handling and even requesters on some targets - ooeer!
+
+
+***** V19 *****
+
+Added more errror handling in general.
+
+Added 'Function Error( msg$ )' - can be used to 'quit' a program with a Null 'msg'.
+
+
+***** V18 *****
+
+SetColor back to 0-255.
+
+Removed std.color, std.rect - too contentious!
+
+
+***** V17 *****
+
+Unified GLFW/iOS mojo OpenGL code.
+
+Improved unreachable code detection, for the love of Java what a PITA!
+
+Added 'Shl' and 'Shr'. 'Shr' is signed, no unsigned op: use '&' masking if necessary.
+
+'trans' and 'scandir' tools moved to 'bin' dir. 'scandir' renamed to 'makemeta'.
+
+Changed 'Break' to 'Exit' - will recognize both until next release!
+
+Added a bunch of mojo graphics 'get' functions.
+
+Added std.rect and std.color modules and added mojo support - SetColor now takes 0-1!
+
+Added array/null checks to HTML5 target - more to come.
+
+
+***** V16 *****
+
+Added macos GLFW target.
+
+Tweaked ios mojo graphics.
+
+Added proper string comparisons in C#/Java.
+
+Improved support for arrays of arrays.
+
+Old style rem/endrem gone for good.
+
+Fixed more trig degress->radians issues.
+
+Implemented AL audio in GLFW target - added simple 'WAV' loader.
+
+Improved parsing of 'bracketless' function statements. Should now work with New/Super.New/Super.blah 'statements' too.
+
+
+***** V15 *****
+
+Fixed skid's const bool eval bug.
+
+Fixed glfw minimize window bug.
+
+Fixed html5 lost mouseup event by simulating mouseup when mouse leaves canvas - not ideal, any better ideas most welcome.
+
+Added SetBlend to mojo.graphics: 0 for normal/alpha, 1 for 'lighten' - exact algorithm is target dependent! Lighten is slow on Android!
+
+Added SetAlpha to mojo.graphics: affects images too.
+
+Added SetScissor to mojo.graphics - works in untransformed device coords.
+
+
+***** V14 *****
+
+Added private imports.
+
+Added -update, -build to trans.
+
+Added GC to glfw/ios targets.
+
+MilliSecs renamed to Millisecs.
+
+gxtk renamed to mojo.
+
+iphone target renamed to ios.
+
+std.system moved to trans.system.
+
+
+***** V13 *****
+
+Added LoadString/SaveString functions to gxtp.app
+
+Added '-config=' option to trans - options are debug or release. Doesn't do much/anything yet!
+
+Added '-clean' option to trans for deleting target build dir (used to always do this).
+
+Added glfw target for 'native' apps - use glfw API for OS, OpenAL for Audio, stb_image for images...only windows for now...requires vc2010
+
+Resurrected 'Strict' mode!
+
+Added 'strict', 'void' to keywords in toker.
+
+
+***** V12 *****
+
+SetFont/DrawText added. These are very simple and meant mainly for debugging purposes.
+
+Key hits now auto flushed at end of OnUpdate - use 'em or lose 'em!
+
+Javascript version now global-less (except for startup...)!
+
+LoadSave/SaveState added.
+
+XNA upgraded to V4!
+
+Global inits should now be in correct order.
+
+MilliSecs/SetUpdateRate moved from App class to app module.
+
+
+***** V11 *****
+
+Restored langref.txt!
+
+Fixed Bool arrays - tidied up Bool a bit in general.
+
+String imports can now only be used to import non-monkey files.
+
+Lazy import support added.
+
+Include removed.
+
+Added simple preprocessor: Uses '#' at start of line ala C.
+
+Directives are:
+
+#If <expression>
+#Else
+#Else If
+#End
+#Print <expression>
+#Rem   (same as #If 0)
+
+Only SIMPLE expressions supported!
+
+The following predefined string consts can be used:
+
+HOST		'One of: winnt macos linux
+LANG		'One of: js as cs java cpp
+TARGET		'One of: html5 flash xna android iphone 
+MODPATH		'modules dir
+PROJPATH	'top dir of project being compiled
+
+macos should be darwin?
+
+Block rem is now:
+
+#Rem
+------------------
+This is a comment!
+------------------
+#End
+
+***** V10 *****
+
+iPhone gxtk target added.
+
+Added TouchX#( index ),TouchY#( index ),TouchDown( index ) and TouchHit( index ).
+
+Block rem is now Rem...EndRem
+
+
+***** V9 *****
+
+"String", "Object" now valid identifiers - no need for "@" prefix.
+
+
+***** V8 *****
+
+LoadImage/GrabImage syntax changed - see gxtk docs.txt
+
+Default image flags now 0. Use 'Image.DefaultFlags=MidHandle' for auto-midhandle...
+
+Added App.MilliSecs() - milliseconds since app started.
+
+Added List.Remove( value:T ) - remove ALL instances of a value.
+
+
+***** V7 *****
+
+Added Resize( length ) method to arrays.
+
+Slice indices now clamped to string/array length - see new Resize() for resizing arrays.
+
+Slices: negative 'from' or 'to' params indicate distance from end of string/array.
+
+Started some docs - see docs.txt in std and gxtk dirs.
+
+Renamed sqr -> sqrt.
+
+Main trans app renamed to trans_hostos, eg: one of trans_macos, trans_linux, trans_win32.exe - no .exe etensions for non-windows platforms.
+
+Add Sgn to math.
+
+Added DrawLine, DrawOval, DrawCircle, DrawEllipse to gxtk.graphics
+
+OnLoading now called instead of OnUpdate/OnRender if app is still Loading stuff.

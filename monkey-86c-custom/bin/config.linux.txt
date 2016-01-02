@@ -1,0 +1,74 @@
+
+'--------------------
+'Monkey modules path
+'
+'Can be overriden via transcc cmd line
+'
+MODPATH="${MONKEYDIR}/modules;${MONKEYDIR}/modules_ext"
+'--------------------
+'--------------------
+'MinGW path.
+'
+'To support cross compilation for MS Windows with Linux, you need to install the MinGW32 and WINE packages from your distributions
+'repository. You will either have to install the Creative OpenAL libraries or build the OpenAL-Soft version with the MinGW32 cross compiler for distribution
+'You will also have to make a few changes to the WINE configuration so that the compiled program can locate runtime libraries.
+'To make use of MinGW, you will need to set the MINGW_TOOLCHAIN to the type you wish to use. Do not use a full path or filename.
+'If you wish to build for Windows add -mingw32cross as a parameter to the transcc 
+
+'MinGW is set to: i686-w64-mingw32 (known locations /usr/i686-w64-mingw32 and /usr/local/i686-w64-mingw32) and will only compile 32bit applications
+'Use tool chain x86_64-w64-mingw32 (known locations /usr/x86_64-w64-mingw32 and /usr/local/x86_64-w64-mingw32). Please be aware that there
+'is a known bug in MinGW-w64 version 4.8 that prevents the use of the -m32 option. If you need to build a 32 bit binary, then use the i686 toolchain. 
+'
+MINGW_TOOLCHAIN="i686-w64-mingw32"
+
+'--------------------
+
+'--------------------
+'HTML player path.
+'
+'Must be set for HTML5 target support.
+'
+HTML_PLAYER="${MONKEYDIR}/bin/mserver_linux"
+'--------------------
+
+'--------------------
+'Java dev kit path
+'
+'Must be set to a valid dir for ANDROID and FLASH target support
+'
+'The Java JDK is currently available here:
+'	http://www.oracle.com/technetwork/java/javase/downloads/index.html
+'
+JDK_PATH="${JAVA_HOME}"
+JDK_PATH="${HOME}/jdk1.8.0_31"
+JDK_PATH="${HOME}/jdk1.7.0_09"
+'--------------------
+
+'--------------------
+'Flex SDK and flash player path.
+'
+'FLEX_PATH Must be set for FLASH target support.
+'
+FLEX_PATH="${HOME}/dev/sdk/apache-flex-sdk-4.12.0-bin"
+FLEX_PATH="${HOME}/flex_sdk_4.6"
+'
+'for opening .swf files...monkey will use HTML_PLAYER if this is not set.
+'FLASH_PLAYER="...?..."
+'FLASH_PLAYER="...?..."
+'--------------------
+
+'--------------------
+'Android SDK and tool paths.
+'
+'Must be set to a valid for for ANDROID target support.
+'
+ANDROID_PATH="${HOME}/dev/sdk/android-sdk-linux"
+'--------------------
+
+'--------------------
+'Android NDK
+'
+'Must be set to a valid dir for ANDROID NDK target support
+'
+ANDROID_NDK_PATH="${HOME}/dev/sdk/android-ndk-r10d"
+'--------------------

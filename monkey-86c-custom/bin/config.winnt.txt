@@ -1,0 +1,141 @@
+
+'--------------------
+'Monkey modules path
+'
+'Can be overriden via transcc cmd line
+'
+MODPATH="${MONKEYDIR}/modules;${MONKEYDIR}/modules_ext"
+'--------------------
+
+'--------------------
+'HTML player path.
+'
+'Must be set for HTML5 target support.
+'
+'for opening .html files...
+'
+HTML_PLAYER="${MONKEYDIR}\bin\mserver_winnt.exe"
+'--------------------
+
+'--------------------
+'Ant build tool path
+'
+'Must be set to a valid dir for ANDROID target support
+'
+'Ant is currently available here: http://ant.apache.org/bindownload.cgi
+'
+ANT_PATH="D:\\devtools\apache-ant-windows"
+ANT_PATH="${SYSTEMDRIVE}\apache-ant-1.9.3"
+ANT_PATH="${SYSTEMDRIVE}\apache-ant-1.9.2"
+ANT_PATH="${SYSTEMDRIVE}\apache-ant-1.8.4"
+ANT_PATH="${SYSTEMDRIVE}\apache-ant-1.8.2"
+ANT_PATH="${SYSTEMDRIVE}\ant"
+'--------------------
+
+'--------------------
+'MinGW path.
+'
+'Must be set to a valid dir for desktop/stdcpp target support.
+'
+'MinGW is currently here:
+'
+MINGW_PATH="D:\Applications\Compilers\TDM-GCC-64"
+MINGW_PATH="D:\\devtools\TDM-GCC-32-5.1.0"
+MINGW_PATH="D:\\devtools\TDM-GCC-32"
+MINGW_PATH="${MONKEYDIR}\MinGW"
+MINGW_PATH="${SYSTEMDRIVE}\TDM-GCC-32"
+MINGW_PATH="${SYSTEMDRIVE}\MinGW32"
+MINGW_PATH="${SYSTEMDRIVE}\MinGW"
+'--------------------
+
+'--------------------
+'Java dev kit path
+'
+'Must be set to a valid dir for ANDROID and FLASH target support
+'
+'The Java JDK is currently available here: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+'
+JDK_PATH="D:\\devtools\jdk-8u5-windows-i586"
+'
+'For normal JDK
+JDK_PATH="${SYSTEMDRIVE}\Program Files\Java\jdk1.7.0_51"
+JDK_PATH="${SYSTEMDRIVE}\Program Files\Java\jdk1.7.0_17"
+JDK_PATH="${SYSTEMDRIVE}\Program Files\Java\jdk1.7.0_02"
+JDK_PATH="${SYSTEMDRIVE}\Program Files\Java\jdk1.6.0_23"
+JDK_PATH="${SYSTEMDRIVE}\Program Files\Java\jdk1.6.0_21"
+JDK_PATH="${SYSTEMDRIVE}\Program Files\Java\jdk1.6.0_19"
+
+'For 32 bit JDK on 64 bit Windows
+JDK_PATH="${SYSTEMDRIVE}\Program Files (x86)\Java\jdk1.7.0_51"
+JDK_PATH="${SYSTEMDRIVE}\Program Files (x86)\Java\jdk1.7.0_17"
+JDK_PATH="${SYSTEMDRIVE}\Program Files (x86)\Java\jdk1.7.0_02"
+JDK_PATH="${SYSTEMDRIVE}\Program Files (x86)\Java\jdk1.6.0_23"
+JDK_PATH="${SYSTEMDRIVE}\Program Files (x86)\Java\jdk1.6.0_21"
+JDK_PATH="${SYSTEMDRIVE}\Program Files (x86)\Java\jdk1.6.0_19"
+
+'--------------------
+
+'--------------------
+'Android SDK and tool paths.
+'
+'Must be set to a valid dir for ANDROID target support
+'
+ANDROID_PATH="D:\\devtools\android-sdk-windows"
+ANDROID_PATH="${SYSTEMDRIVE}\android-sdk-windows"
+ANDROID_PATH="${SYSTEMDRIVE}\android-sdk"
+'--------------------
+
+'--------------------
+'Android NDK
+'
+'Must be set to a valid dir for ANDROID NDK target support
+'
+ANDROID_NDK_PATH=D:\\devtools\android-ndk-r9"
+ANDROID_NDK_PATH="${SYSTEMDRIVE}\android-ndk-r9"
+'--------------------
+
+'--------------------
+'Flex SDK and flash player path.
+'
+'FLEX_PATH Must be set for FLASH target support.
+'
+'Either HTML_PLAYER or FLASH_PLAYER must be set for FLASH target support.
+'
+FLEX_PATH="D:\\devtools\flex-sdk"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.11.0"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.9.1"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.6"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.5"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1.0.16076"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0.0.14159"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4"
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk"
+'
+'for opening .swf files...monkey will use HTML_PLAYER if this is not set.
+'FLASH_PLAYER="...?..."
+'--------------------
+
+'--------------------
+'Play Station Mobile SDK path.
+'
+'PSM_PATH must be set for PSM target support.
+'
+PSM_PATH="D:\devtools\PSM_SDK"
+PSM_PATH="${PROGRAMFILES}\SCE\PSM"
+'--------------------
+
+'--------------------
+'MSBUILD path.
+'
+'Must be set for XNA and GLFW target support.
+' Note: In later versions of Visual Studio, MSBuild is part of the VS install and not the .NET framework
+' make sure that you are using the right one if you have multiple version of Visual Studio installed
+'MSBUILD_PATH="${PROGRAMFILES}\MSBuild\12.0\Bin\MSBuild.exe"
+'MSBUILD_PATH="${PROGRAMFILES}\MSBuild\14.0\Bin\MSBuild.exe"
+'MSBUILD_PATH="${PROGRAMFILES} (x86)\MSBuild\12.0\Bin\MSBuild.exe"
+MSBUILD_PATH="${PROGRAMFILES} (x86)\MSBuild\14.0\Bin\MSBuild.exe"
+' VS2010
+MSBUILD_PATH="${WINDIR}\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
+'--------------------

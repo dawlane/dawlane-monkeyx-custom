@@ -1,0 +1,71 @@
+
+'--------------------
+'Monkey modules path
+'
+'Can be overriden via transcc cmd line
+'
+MODPATH="${MONKEYDIR}/modules;${MONKEYDIR}/modules_ext"
+'--------------------
+'MinGW path.
+'
+'To support cross compilation for MS Windows with Mac OS X, you need to install WINE and the MinGW32-w64 cross compiler
+'You will also have to make a few changes to the WINE configuration so that the compiled program can locate runtime libraries.
+'To make use of MinGW, you will need to set the MINGW_PATH to where it is located.
+'To use a particular tool chain group. Pass the first part of the tools filename/path .g i686-w64-ming32 or x86_64-w64-mingw32
+'If you wish to build for Windows add -mingw32cross as a parameter to the transcc. If either MINGW_PATH or MINGW_TOOLCHAIN are
+' empty. Then the compiler defaults to the normal Xcode version installed.
+'
+MINGW_PATH="${HOME}/mingw-w32"
+MINGW_TOOLCHAIN="i686-w64-mingw32"
+'--------------------
+
+'--------------------
+'HTML player path.
+'
+'Must be set for HTML5 target support.
+'
+HTML_PLAYER=open -n "${MONKEYDIR}/bin/mserver_macos.app" --args
+'--------------------
+
+'--------------------
+'Ant build tool path
+'
+'Must be set to a valid dir for ANDROID target support on Mavericks ('coz Mavericks no longer includes Ant).
+'
+'Ant is currently available here: 
+'	http://ant.apache.org/bindownload.cgi
+'
+ANT_PATH="${HOME}/apache-ant-1.9.4"
+ANT_PATH="${HOME}/apache-ant-1.9.2"
+'--------------------
+
+'--------------------
+'Flex SDK and flash player path.
+'
+'Must be set for FLASH target support.
+'
+FLEX_PATH="${HOME}/flex_sdk_4.9.1"
+FLEX_PATH="${HOME}/flex_sdk_4.9"
+FLEX_PATH="${HOME}/flex_sdk_4.6"
+'
+'for opening .swf files...monkey will use HTML_PLAYER if this is not set.
+'FLASH_PLAYER="...?..."
+'--------------------
+
+'--------------------
+'Android SDK and tool paths.
+'
+'Must be set to a valid for for ANDROID target support
+'
+'Android SDK
+ANDROID_PATH="${HOME}/android-sdk-macosx"
+'--------------------
+
+'--------------------
+'Android NDK
+'
+'Must be set to a valid dir for ANDROID NDK target support
+'
+ANDROID_NDK_PATH="${HOME}/android-ndk-r9"
+'--------------------
+
