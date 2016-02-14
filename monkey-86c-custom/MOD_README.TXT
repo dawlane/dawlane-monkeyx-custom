@@ -1,16 +1,39 @@
 
 Unofficial modifications to v86c by dawlane
 
-Added a quick set file permissions script for Linux
+Modifications to transcc dawlane mods v0.04
+
+#GLFW_APP_FILENAME and #CC_OUT_FILENAME will now change the final executable file name. Note that white space character are not supported and switching C++tools
+with MinGW Cross compiler will leave old files intact if you change the name.
+
+You can pass additional parameters to Visual Studio directly for the GLFW targets with #GLFW_VSTUDIO_OPTS and for XCODE use #GLFW_XCODE_OPTS.
+
+Added a new Exectue function only for use in transcc.
+	It returns text outputed to stdout and stderr, as well as a return code. To use, you must pass an empty string.
+	It's primary use is to get limited information from tools and not a full output from something like g++ while it's compiling code. Trying to do that may make it crash when you run out of memory.
+ 
+iOS Target updated to include four new config variables:
+	#IOS_DEVICE_NAME		- Allows you to select a device by name.
+	#IOS_SDK_VERSION		- Allows you to select an installed SDK by version. Can be used with the previous config variable to refine the target device if there is more than one with the same name.
+	#IOS_BUNDLE_ID			- Allows you to change the application bundle identifier. Use only the reverse domain part for this e.g. com.yourcompany, as the following config variable will complete the rest.
+	#IOS_PRODUCT_ID			- Allows you to change the name of the application bundle. Note that this will complete the previous config variable. e.g. com.yourcompany.MonkeyGame
+
+iOS Project template updated Deployment Target to 6.0 and MonkeyGame scheme set to share. Setting it to share saves opening the project in Xcode to update it for each user.
+
+Fixed iOS Simulator not starting.
+	Note that the code for prior versions has beem removed. 
+	With the new Execute function. It is now possible to query tools for information such as instruments.
+	You can select which to use with #IO_DEVICE_NAME. The default is iPhone 4s.
 
 Modifications to transcc dawlane mods v0.03
+
+Added a quick set file permissions script for Linux
 
 Added a transcc option (-msize=) to be able to switch between 32 bit and 64 bit building.
 	Only GLFW Desktop targets will recognise this. You can override this from your source code with
 	#GLFW_GCC_CC_OPTS, #GLFW_GCC_LD_OPTS and #GLFW_DESKTOP_MSIZE. You will of course require a compiler capable of compiling 32 and 64 bit binaries.
 
 Added four compiler directives for GLFW2/3 Desktop to use with MinGW and Linux GCC.
-	The first for are for advanced use, so if you do not understand GCC/MinGW options; then don't use them.
 	#GLFW_GCC_CC_OPTS		- Allows you to pass GCC/MinGW compiler options directly to the backend compiler.
 	#GLFW_GCC_LD_OPTS		- Allows you to pass GCC/MinGW linker options directly to the backend compiler.
 	#GLFW_GCC_LDLIBS_OPTS		- Allows you to pass addition libraries and search options.
