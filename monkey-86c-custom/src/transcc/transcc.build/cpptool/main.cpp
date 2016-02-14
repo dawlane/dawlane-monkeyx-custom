@@ -7,11 +7,12 @@
 #define CFG_BRL_OS_IMPLEMENTED 1
 #define CFG_BRL_STREAM_IMPLEMENTED 1
 #define CFG_BRL_THREAD_IMPLEMENTED 1
+#define CFG_CC_OUT_FILENAME transcc
 #define CFG_CD 
 #define CFG_CONFIG release
 #define CFG_CPP_DOUBLE_PRECISION_FLOATS 1
 #define CFG_CPP_GC_MODE 1
-#define CFG_HOST winnt
+#define CFG_HOST macos
 #define CFG_LANG cpp
 #define CFG_MODPATH 
 #define CFG_RELEASE 1
@@ -2496,7 +2497,6 @@ int ExitApp( int retcode ){
 	return 0;
 }
 
-
 // ***** thread.h *****
 
 #if __cplusplus_winrt
@@ -2915,6 +2915,53 @@ int BBFileStream::Write( BBDataBuffer *buffer,int offset,int count ){
 	return n;
 }
 
+// Windows, Linux, OSX dirty conversion from multi-byte to wchar
+String MBTOWC(const char* ptr, size_t bytes){
+	String result;
+	int len;
+	wchar_t dest;
+	mbtowc (NULL, NULL, 0);
+	while (bytes>0) {
+		len = mbtowc(&dest,ptr,bytes);
+		if (len<1) break;
+		result+=String(dest,1);
+		ptr+=len;
+		bytes-=len;
+	}
+	return result;
+}
+
+/*
+	Add the abillity to pipe child process output.
+	Note that for MS Windows only console mode applications are supported at this time
+*/
+int Execute( String cmd, String &ref ){
+	FILE* filestream;
+	char streambuffer[4096];
+	int exitcode=-1;
+	#ifdef __Win32
+	filestream=_popen(String(cmd+" 2>&1").ToCString<char>(), "r");
+	#else
+	filestream=popen(String(cmd+" 2>&1").ToCString<char>(), "r");
+	#endif
+	if(filestream==NULL ||cmd==""){
+		ref=String("Invalid child process.\n");
+		#ifdef __Win32
+		_pclose(filestream);
+		#else
+		pclose(filestream);
+		#endif
+		return exitcode;
+		}
+	while(fgets(streambuffer,sizeof(streambuffer), filestream) !=NULL){
+		ref+=MBTOWC(streambuffer,sizeof(streambuffer));
+	}
+	#ifdef __Win32
+	return _pclose(filestream);
+	#else
+	return pclose(filestream);
+	#endif
+}
 class c_TransCC;
 class c_Type;
 class c_StringType;
@@ -3063,6 +3110,9 @@ class c_CTranslator;
 class c_JavaTranslator;
 class c_NodeEnumerator3;
 class c_CppTranslator;
+class c_CBuildStatus;
+class c_MapKeys;
+class c_KeyEnumerator;
 class c_JsTranslator;
 class c_Stream;
 class c_FileStream;
@@ -3342,6 +3392,10 @@ class c_Map2 : public Object{
 	bool p_Contains(String);
 	c_Node2* p_FirstNode();
 	c_NodeEnumerator3* p_ObjectEnumerator();
+	bool p_Add(String,String);
+	bool p_Update(String,String);
+	c_MapKeys* p_Keys();
+	int p_Clear();
 	void mark();
 };
 class c_StringMap2 : public c_Map2{
@@ -3496,10 +3550,10 @@ class c_GlfwBuilder : public c_Builder{
 	bool p_IsValid();
 	void p_Begin();
 	String p_Config();
-	void p_MakeGcc();
-	void p_MakeVc2010();
-	void p_MakeMsvc();
-	void p_MakeXcode();
+	void p_MakeGcc(String);
+	void p_MakeVc2010(String);
+	void p_MakeMsvc(String);
+	void p_MakeXcode(String);
 	void p_MakeTarget();
 	void mark();
 };
@@ -3520,6 +3574,8 @@ class c_IosBuilder : public c_Builder{
 	c_StringMap2* m__buildFiles;
 	int m__nextFileId;
 	c_StringMap2* m__fileRefs;
+	Array<int > m__xcodeVersion;
+	Array<int > m__iOS_SDKVersion;
 	c_IosBuilder();
 	c_IosBuilder* m_new(c_TransCC*);
 	c_IosBuilder* m_new2();
@@ -3536,6 +3592,9 @@ class c_IosBuilder : public c_Builder{
 	String p_LibsGroup();
 	String p_MungProj(String);
 	void p_MungProj2();
+	void p_GetSDKVersion();
+	bool p_iOSSimBooted(String,int);
+	int p_iOSStartSimulator(String,String,String,String);
 	void p_MakeTarget();
 	void mark();
 };
@@ -5237,8 +5296,39 @@ class c_CppTranslator : public c_CTranslator{
 	String p_TransAssignStmt2(c_AssignStmt*);
 	void mark();
 };
-String bb_transcc_RetrieveOpt(String,String,int,String);
-int bb_transcc_GetMSize(String,String,String,String,String);
+String bb_additional_RetrieveOpt(String,String,int,String);
+int bb_additional_GetMSize(String,String,String,String,String);
+class c_CBuildStatus : public Object{
+	public:
+	c_StringMap2* m_map;
+	c_CBuildStatus();
+	c_CBuildStatus* m_new();
+	String p_LoadFile(String);
+	String p_GetKey(String);
+	void p_AddKey(String,String);
+	void p_SaveFile(String);
+	void mark();
+};
+extern c_CBuildStatus* bb_transcc_BuildStatus;
+class c_MapKeys : public Object{
+	public:
+	c_Map2* m_map;
+	c_MapKeys();
+	c_MapKeys* m_new(c_Map2*);
+	c_MapKeys* m_new2();
+	c_KeyEnumerator* p_ObjectEnumerator();
+	void mark();
+};
+class c_KeyEnumerator : public Object{
+	public:
+	c_Node2* m_node;
+	c_KeyEnumerator();
+	c_KeyEnumerator* m_new(c_Node2*);
+	c_KeyEnumerator* m_new2();
+	bool p_HasNext();
+	String p_NextObject();
+	void mark();
+};
 class c_JsTranslator : public c_CTranslator{
 	public:
 	c_JsTranslator();
@@ -5310,6 +5400,12 @@ class c_DataBuffer : public BBDataBuffer{
 int bb_html5_GetInfo_PNG(String);
 int bb_html5_GetInfo_JPG(String);
 int bb_html5_GetInfo_GIF(String);
+Array<int > bb_additional_Version2Array(String);
+Array<int > bb_additional_XCODEVersion();
+String bb_additional_Version2String(Array<int >,bool);
+bool bb_additional_XCRUNCheck();
+String bb_additional_XCODEGetDeviceUDID(String);
+String bb_additional_XCODEGetDeviceUDID2(String,Array<int >);
 class c_AsTranslator : public c_CTranslator{
 	public:
 	c_AsTranslator();
@@ -5972,9 +6068,9 @@ String c_TransCC::p_GetReleaseVersion(){
 void c_TransCC::p_Run(Array<String > t_args){
 	gc_assign(this->m_args,t_args);
 	if(HostOS()==String(L"winnt",5)){
-		bbPrint(String(L"TRANS monkey compiler V1.86 (CPU architecure selection enabled v0.03 by dawlane)",80));
+		bbPrint(String(L"TRANS monkey compiler V1.86 (Dawlane Custom v0.04)",50));
 	}else{
-		bbPrint(String(L"TRANS monkey compiler V1.86 (MinGW Cross Compiler and CPU architecure selection enabled v0.03 by dawlane)",105));
+		bbPrint(String(L"TRANS monkey compiler V1.86 (Dawlane Custom with MinGW support v0.04)",69));
 	}
 	m_monkeydir=RealPath(bb_os_ExtractDir(AppPath())+String(L"/..",3));
 	SetEnv(String(L"MONKEYDIR",9),m_monkeydir);
@@ -7178,6 +7274,51 @@ c_Node2* c_Map2::p_FirstNode(){
 c_NodeEnumerator3* c_Map2::p_ObjectEnumerator(){
 	return (new c_NodeEnumerator3)->m_new(p_FirstNode());
 }
+bool c_Map2::p_Add(String t_key,String t_value){
+	c_Node2* t_node=m_root;
+	c_Node2* t_parent=0;
+	int t_cmp=0;
+	while((t_node)!=0){
+		t_parent=t_node;
+		t_cmp=p_Compare(t_key,t_node->m_key);
+		if(t_cmp>0){
+			t_node=t_node->m_right;
+		}else{
+			if(t_cmp<0){
+				t_node=t_node->m_left;
+			}else{
+				return false;
+			}
+		}
+	}
+	t_node=(new c_Node2)->m_new(t_key,t_value,-1,t_parent);
+	if((t_parent)!=0){
+		if(t_cmp>0){
+			gc_assign(t_parent->m_right,t_node);
+		}else{
+			gc_assign(t_parent->m_left,t_node);
+		}
+		p_InsertFixup2(t_node);
+	}else{
+		gc_assign(m_root,t_node);
+	}
+	return true;
+}
+bool c_Map2::p_Update(String t_key,String t_value){
+	c_Node2* t_node=p_FindNode(t_key);
+	if((t_node)!=0){
+		t_node->m_value=t_value;
+		return true;
+	}
+	return false;
+}
+c_MapKeys* c_Map2::p_Keys(){
+	return (new c_MapKeys)->m_new(this);
+}
+int c_Map2::p_Clear(){
+	m_root=0;
+	return 0;
+}
 void c_Map2::mark(){
 	Object::mark();
 	gc_mark_q(m_root);
@@ -8243,7 +8384,7 @@ String c_GlfwBuilder::p_Config(){
 	}
 	return t_config->p_Join(String(L"\n",1));
 }
-void c_GlfwBuilder::p_MakeGcc(){
+void c_GlfwBuilder::p_MakeGcc(String t_fileOut){
 	String t_cc_opts=bb_config_GetConfigVar(String(L"GLFW_GCC_CC_OPTS",16));
 	String t_ld_opts=bb_config_GetConfigVar(String(L"GLFW_GCC_LD_OPTS",16));
 	String t_ld_lib_opts=bb_config_GetConfigVar(String(L"GLFW_GCC_LDLIBS_OPTS",20));
@@ -8251,6 +8392,7 @@ void c_GlfwBuilder::p_MakeGcc(){
 	String t_dst=String();
 	String t_xcopts=String();
 	int t_choice=0;
+	String t_lastBuildName=String();
 	if(!m_tcc->m_opt_mingw32cross){
 		bbPrint(String(L"**** Using native MinGW/GCC compiler ****",41));
 		t_dst=String(L"gcc_",4)+HostOS();
@@ -8262,7 +8404,7 @@ void c_GlfwBuilder::p_MakeGcc(){
 			t_xcopts=t_xcopts+(String(L" MACOS=1 MINGW_PATH=",20)+m_tcc->m_MINGW_PATH);
 		}
 	}
-	t_choice=bb_transcc_GetMSize(String(L"-m32",4),String(L"-m64",4),t_cc_opts,t_ld_opts,String(L" ",1));
+	t_choice=bb_additional_GetMSize(String(L"-m32",4),String(L"-m64",4),t_cc_opts,t_ld_opts,String(L" ",1));
 	int t_1=t_choice;
 	if(t_1==-1){
 		if(!(((t_msize).Length()!=0) || ((m_tcc->m_opt_msize).Length()!=0))){
@@ -8323,6 +8465,24 @@ void c_GlfwBuilder::p_MakeGcc(){
 		ChangeDir(t_dst);
 		CreateDir(String(L"build",5));
 		CreateDir(String(L"build/",6)+m_casedConfig);
+		if(FileType(String(L"buildfile",9))==1){
+			bb_transcc_BuildStatus->p_LoadFile(String(L"buildfile",9));
+			t_lastBuildName=bb_transcc_BuildStatus->p_GetKey(m_casedConfig+String(L"_filename",9));
+			bbPrint(String(L"**** Last GLFW Application File Name ",37)+t_lastBuildName+String(L" ****",5));
+		}
+		if((t_lastBuildName.Compare(t_fileOut))!=0){
+			if(HostOS()==String(L"winnt",5)){
+				if(FileType(m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".exe",4))==1){
+					DeleteFile(m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".exe",4));
+				}
+			}else{
+				if(FileType(m_casedConfig+String(L"/",1)+t_lastBuildName)==1){
+					DeleteFile(m_casedConfig+String(L"/",1)+t_lastBuildName);
+				}
+			}
+		}
+		bb_transcc_BuildStatus->p_AddKey(m_casedConfig+String(L"_filename",9),t_fileOut);
+		bb_transcc_BuildStatus->p_SaveFile(String(L"buildfile",9));
 		if(t_choice>0){
 			bbPrint(String(L"**** Building ",14)+String(t_choice)+String(L" bit application ****",21));
 			if(((m_tcc->m_opt_msize).Length()!=0) || ((t_msize).Length()!=0)){
@@ -8352,24 +8512,24 @@ void c_GlfwBuilder::p_MakeGcc(){
 			}else{
 				bbPrint(String(L"Executing native GCC compiler",29));
 			}
-			p_Execute(t_cmd+String(L" CCOPTS=\"",9)+t_cc_opts+String(L"\" LDOPTS=\"",10)+t_ld_opts+String(L"\" LDLIBOPTS=\"",13)+t_ld_lib_opts+String(L"\" ",2)+t_xcopts+String(L" OUT=\"",6)+m_casedConfig+String(L"/MonkeyGame\" ",13),true);
+			p_Execute(t_cmd+String(L" CCOPTS=\"",9)+t_cc_opts+String(L"\" LDOPTS=\"",10)+t_ld_opts+String(L"\" LDLIBOPTS=\"",13)+t_ld_lib_opts+String(L"\" ",2)+t_xcopts+String(L" OUT=\"",6)+m_casedConfig+String(L"/",1)+t_fileOut+String(L"\" ",2),true);
 			if(m_tcc->m_opt_mingw32cross && (HostOS()==String(L"linux",5) || HostOS()==String(L"macos",5))){
 				bbPrint(String(L"**** Appending .exe to executable ****",38));
-				p_Execute(String(L"mv ",3)+m_casedConfig+String(L"/MonkeyGame ",12)+m_casedConfig+String(L"/MonkeyGame.exe",15),true);
+				p_Execute(String(L"mv \"",4)+m_casedConfig+String(L"/",1)+t_fileOut+String(L"\" \"",3)+m_casedConfig+String(L"/",1)+t_fileOut+String(L".exe\"",5),true);
 			}
 		}else{
 			bbPrint(String(L"**** Executing MinGW compiler ****",34));
-			p_Execute(t_cmd+String(L" CCOPTS=\"",9)+t_cc_opts+String(L"\" LDOPTS=\"",10)+t_ld_opts+String(L"\" LDLIBOPTS=\"",13)+t_ld_lib_opts+String(L"\" ",2)+t_xcopts+String(L" OUT=\"",6)+m_casedConfig+String(L"/MonkeyGame\" ",13),true);
+			p_Execute(t_cmd+String(L" CCOPTS=\"",9)+t_cc_opts+String(L"\" LDOPTS=\"",10)+t_ld_opts+String(L"\" LDLIBOPTS=\"",13)+t_ld_lib_opts+String(L"\" ",2)+t_xcopts+String(L" OUT=\"",6)+m_casedConfig+String(L"/",1)+t_fileOut+String(L"\" ",2),true);
 		}
 		if(m_tcc->m_opt_run){
 			ChangeDir(m_casedConfig);
 			if(HostOS()==String(L"winnt",5)){
-				p_Execute(String(L"MonkeyGame",10),true);
+				p_Execute(String(L"\"./",3)+t_fileOut+String(L"\"",1),true);
 			}else{
 				if(HostOS()==String(L"linux",5) && m_tcc->m_opt_mingw32cross){
 					if((FileType(String(L"/usr/bin/wine",13)))!=0){
 						bbPrint(String(L"**** Executing compiled program via WINE ****",45));
-						p_Execute(String(L"wine MonkeyGame.exe",19),true);
+						p_Execute(String(L"wine \"",6)+t_fileOut+String(L".exe\"",5),true);
 					}else{
 						bbPrint(String(L"Unable to execute cross compiled code. WINE not installed",57));
 					}
@@ -8377,20 +8537,22 @@ void c_GlfwBuilder::p_MakeGcc(){
 					if(HostOS()==String(L"macos",5) && m_tcc->m_opt_mingw32cross){
 						if((FileType(String(L"/usr/local/bin/wine",19)))!=0){
 							bbPrint(String(L"**** Executing compiled program via WINE ****",45));
-							p_Execute(String(L"/usr/local/bin/wine MonkeyGame.exe",34),true);
+							p_Execute(String(L"/usr/local/bin/wine \"",21)+t_fileOut+String(L".exe\"",5),true);
 						}else{
 							bbPrint(String(L"**** Unable to execute cross compiled code. WINE not installed ****",67));
 						}
 					}else{
 						bbPrint(String(L"**** Executing compiled program ****",36));
-						p_Execute(String(L"./MonkeyGame",12),true);
+						p_Execute(String(L"\"./",3)+t_fileOut+String(L"\"",1),true);
 					}
 				}
 			}
 		}
 	}
 }
-void c_GlfwBuilder::p_MakeVc2010(){
+void c_GlfwBuilder::p_MakeVc2010(String t_fileOut){
+	String t_msbuild_opts=bb_config_GetConfigVar(String(L"GLFW_VSTUDIO_OPTS",17));
+	String t_lastBuildName=String();
 	CreateDir(String(L"vc2010/",7)+m_casedConfig);
 	CreateDir(String(L"vc2010/",7)+m_casedConfig+String(L"/internal",9));
 	CreateDir(String(L"vc2010/",7)+m_casedConfig+String(L"/external",9));
@@ -8401,17 +8563,41 @@ void c_GlfwBuilder::p_MakeVc2010(){
 	SaveString(t_main,String(L"main.cpp",8));
 	if(m_tcc->m_opt_build){
 		ChangeDir(String(L"vc2010",6));
-		p_Execute(String(L"\"",1)+m_tcc->m_MSBUILD_PATH+String(L"\" /p:Configuration=",19)+m_casedConfig+String(L" /p:Platform=Win32 MonkeyGame.sln",33),true);
+		if(FileType(String(L"buildfile",9))==1){
+			bb_transcc_BuildStatus->p_LoadFile(String(L"buildfile",9));
+			t_lastBuildName=bb_transcc_BuildStatus->p_GetKey(m_casedConfig+String(L"_filename",9));
+			bbPrint(String(L"**** Last GLFW Application File Name ",37)+t_lastBuildName+String(L" ****",5));
+		}
+		if((t_lastBuildName.Compare(t_fileOut))!=0){
+			Array<String > t_dir=LoadDir(String(L"build/",6)+m_casedConfig);
+			Array<String > t_=t_dir;
+			int t_2=0;
+			while(t_2<t_.Length()){
+				String t_line=t_[t_2];
+				t_2=t_2+1;
+				if(t_line.Contains(String(L".manifest",9)) || t_line.Contains(String(L".tlog",5)) || t_line.Contains(String(L".lastbuild",10))){
+					DeleteFile(String(L"build/",6)+m_casedConfig+String(L"/",1)+t_line);
+				}
+			}
+			if(FileType(m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".exe",4))==1){
+				DeleteFile(m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".exe",4));
+			}
+		}
+		bb_transcc_BuildStatus->p_AddKey(m_casedConfig+String(L"_filename",9),t_fileOut);
+		bb_transcc_BuildStatus->p_SaveFile(String(L"buildfile",9));
+		p_Execute(String(L"\"",1)+m_tcc->m_MSBUILD_PATH+String(L"\" /p:Configuration=",19)+m_casedConfig+String(L" ",1)+t_msbuild_opts+String(L" /p:Platform=Win32 /p:projectname=\"",35)+t_fileOut+String(L"\" MonkeyGame.sln",16),true);
 		if(m_tcc->m_opt_run){
 			ChangeDir(m_casedConfig);
-			p_Execute(String(L"MonkeyGame",10),true);
+			p_Execute(String(L"\"",1)+t_fileOut+String(L"\"",1),true);
 		}
 	}
 }
-void c_GlfwBuilder::p_MakeMsvc(){
+void c_GlfwBuilder::p_MakeMsvc(String t_fileOut){
 	String t_platform=String();
 	int t_choice=0;
+	String t_lastBuildName=String();
 	String t_msize=bb_config_GetConfigVar(String(L"GLFW_DESKTOP_MSIZE",18));
+	String t_msbuild_opts=bb_config_GetConfigVar(String(L"GLFW_VSTUDIO_OPTS",17));
 	if((t_msize).Length()!=0){
 		m_tcc->m_opt_msize=t_msize;
 	}
@@ -8444,44 +8630,78 @@ void c_GlfwBuilder::p_MakeMsvc(){
 	t_main=bb_transcc_ReplaceBlock(t_main,String(L"CONFIG",6),p_Config(),String(L"\n//",3));
 	SaveString(t_main,String(L"main.cpp",8));
 	if(m_tcc->m_opt_build){
+		String t_lastbuild=String();
 		ChangeDir(String(L"msvc",4));
-		p_Execute(String(L"\"",1)+m_tcc->m_MSBUILD_PATH+String(L"\" /p:Configuration=",19)+m_casedConfig+String(L" ",1)+t_platform,true);
+		if(FileType(String(L"buildfile",9))==1){
+			bb_transcc_BuildStatus->p_LoadFile(String(L"buildfile",9));
+			t_lastBuildName=bb_transcc_BuildStatus->p_GetKey(m_casedConfig+String(L"_filename",9));
+			bbPrint(String(L"**** Last GLFW Application File Name ",37)+t_lastBuildName+String(L" ****",5));
+		}
+		if((t_lastBuildName.Compare(t_fileOut))!=0){
+			if(FileType(m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".exe",4))==1){
+				DeleteFile(m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".exe",4));
+			}
+			if(FileType(String(L"build/",6)+m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".tlog",5))==2){
+				bb_os_DeleteDir(String(L"build/",6)+m_casedConfig+String(L"/",1)+t_lastBuildName+String(L".tlog",5),true);
+			}
+		}
+		bb_transcc_BuildStatus->p_AddKey(m_casedConfig+String(L"_filename",9),t_fileOut);
+		bb_transcc_BuildStatus->p_SaveFile(String(L"buildfile",9));
+		p_Execute(String(L"\"",1)+m_tcc->m_MSBUILD_PATH+String(L"\" /p:Configuration=",19)+m_casedConfig+String(L" ",1)+t_platform+String(L" ",1)+t_msbuild_opts+String(L" /p:projectname=\"",17)+t_fileOut+String(L"\"",1),true);
 		if(m_tcc->m_opt_run){
 			ChangeDir(m_casedConfig);
-			p_Execute(String(L"MonkeyGame",10),true);
+			p_Execute(String(L"\"",1)+t_fileOut+String(L"\"",1),true);
 		}
 	}
 }
-void c_GlfwBuilder::p_MakeXcode(){
+void c_GlfwBuilder::p_MakeXcode(String t_fileOut){
 	p_CreateDataDir(String(L"xcode/data",10));
 	String t_main=LoadString(String(L"main.cpp",8));
+	String t_lastBuildName=String();
+	String t_xcode_opts=bb_config_GetConfigVar(String(L"GLFW_XCODE_OPTS",15));
 	t_main=bb_transcc_ReplaceBlock(t_main,String(L"TRANSCODE",9),m_transCode,String(L"\n//",3));
 	t_main=bb_transcc_ReplaceBlock(t_main,String(L"CONFIG",6),p_Config(),String(L"\n//",3));
 	SaveString(t_main,String(L"main.cpp",8));
 	if(m_tcc->m_opt_build){
 		ChangeDir(String(L"xcode",5));
-		p_Execute(String(L"xcodebuild -configuration ",26)+m_casedConfig,true);
+		if(FileType(String(L"buildfile",9))==1){
+			bb_transcc_BuildStatus->p_LoadFile(String(L"buildfile",9));
+			t_lastBuildName=bb_transcc_BuildStatus->p_GetKey(m_casedConfig+String(L"_filename",9));
+			bbPrint(String(L"**** Last GLFW Application File Name ",37)+t_lastBuildName+String(L" ****",5));
+		}
+		if((t_lastBuildName.Compare(t_fileOut))!=0){
+			if(FileType(String(L"build",5))==2){
+				bb_os_DeleteDir(String(L"build",5),true);
+			}
+			bb_transcc_BuildStatus->p_AddKey(m_casedConfig+String(L"_filename",9),t_fileOut);
+		}
+		bb_transcc_BuildStatus->p_SaveFile(String(L"buildfile",9));
+		p_Execute(String(L"xcodebuild -configuration ",26)+m_casedConfig+String(L" ",1)+t_xcode_opts+String(L" PRODUCT_NAME=\"",15)+t_fileOut+String(L"\" EXECUTABLE_NAME=\"",19)+t_fileOut+String(L"\"",1),true);
 		if(m_tcc->m_opt_run){
 			ChangeDir(String(L"build/",6)+m_casedConfig);
-			ChangeDir(String(L"MonkeyGame.app/Contents/MacOS",29));
-			p_Execute(String(L"./MonkeyGame",12),true);
+			ChangeDir(t_fileOut+String(L".app/Contents/MacOS",19));
+			p_Execute(String(L"./",2)+t_fileOut,true);
 		}
 	}
 }
 void c_GlfwBuilder::p_MakeTarget(){
+	String t_monkeyName=bb_config_GetConfigVar(String(L"GLFW_APP_FILENAME",17));
+	if(!((t_monkeyName).Length()!=0)){
+		t_monkeyName=String(L"MonkeyGame",10);
+	}
 	String t_7=HostOS();
 	if(t_7==String(L"winnt",5)){
 		if(bb_config_GetConfigVar(String(L"GLFW_USE_MINGW",14))==String(L"1",1) && ((m_tcc->m_MINGW_PATH).Length()!=0)){
-			p_MakeGcc();
+			p_MakeGcc(t_monkeyName);
 		}else{
 			if(FileType(String(L"vc2010",6))==2){
-				p_MakeVc2010();
+				p_MakeVc2010(t_monkeyName);
 			}else{
 				if(FileType(String(L"msvc",4))==2){
-					p_MakeMsvc();
+					p_MakeMsvc(t_monkeyName);
 				}else{
 					if((m_tcc->m_MINGW_PATH).Length()!=0){
-						p_MakeGcc();
+						p_MakeGcc(t_monkeyName);
 					}
 				}
 			}
@@ -8489,13 +8709,13 @@ void c_GlfwBuilder::p_MakeTarget(){
 	}else{
 		if(t_7==String(L"macos",5)){
 			if(m_tcc->m_opt_mingw32cross){
-				p_MakeGcc();
+				p_MakeGcc(t_monkeyName);
 			}else{
-				p_MakeXcode();
+				p_MakeXcode(t_monkeyName);
 			}
 		}else{
 			if(t_7==String(L"linux",5)){
-				p_MakeGcc();
+				p_MakeGcc(t_monkeyName);
 			}
 		}
 	}
@@ -8584,6 +8804,8 @@ c_IosBuilder::c_IosBuilder(){
 	m__buildFiles=(new c_StringMap2)->m_new();
 	m__nextFileId=0;
 	m__fileRefs=(new c_StringMap2)->m_new();
+	m__xcodeVersion=Array<int >();
+	m__iOS_SDKVersion=Array<int >();
 }
 c_IosBuilder* c_IosBuilder::m_new(c_TransCC* t_tcc){
 	c_Builder::m_new(t_tcc);
@@ -8807,6 +9029,88 @@ void c_IosBuilder::p_MungProj2(){
 	}
 	SaveString(t_proj,t_path);
 }
+void c_IosBuilder::p_GetSDKVersion(){
+	String t_str=String();
+	int t_err=0;
+	t_err=Execute(String(L"xcrun -sdk iphoneos --show-sdk-version",38),t_str);
+	if(t_err==0){
+		gc_assign(m__iOS_SDKVersion,bb_additional_Version2Array(t_str.Slice(0,t_str.Find(String(L"\n",1),0))));
+	}else{
+		bb_transcc_Die(String(L"**** Error: Unable to determine iOS SDK ****",44));
+	}
+}
+bool c_IosBuilder::p_iOSSimBooted(String t_udid,int t_time){
+	int t_timeOut=0;
+	int t_i=0;
+	String t_str=String();
+	bbPrint(String(L"**** iOS Simulator Booted check ****",36));
+	while(t_timeOut<t_time){
+		t_str=String();
+		if(Execute(String(L"xcrun simctl list | grep ",25)+t_udid,t_str)!=0){
+			bbPrint(t_str);
+			bb_transcc_Die(String(L"**** Error: Unable to get the Simulated devices ****",52));
+		}
+		if(t_str.Contains(String(L"(Booted)",8))){
+			return true;
+		}
+		t_timeOut+=1;
+	}
+	bbPrint(String(L"**** iOS Simulator Boot check timed out ****",44));
+	return false;
+}
+int c_IosBuilder::p_iOSStartSimulator(String t_udid,String t_product,String t_bundle,String t_previousBundle){
+	String t_str=String();
+	int t_err=-1;
+	String t_lastBundle=String();
+	if(FileType(String(L"tracefiles.trace",16))==2){
+		bb_os_DeleteDir(String(L"tracefiles.trace",16),true);
+	}
+	if(!p_iOSSimBooted(t_udid,20)){
+		bbPrint(String(L"**** Starting Simulator ****",28));
+		t_err=Execute(String(L"xcrun instruments -w \"",22)+t_udid+String(L"\" -t \"Blank\" -l \"1\" -D \"tracefiles\"",35),t_str);
+		if(t_err!=0){
+			bbPrint(t_str);
+			return 1;
+		}
+	}
+	bbPrint(String(L"**** Checking for previous install ****",39));
+	if(!((t_previousBundle).Length()!=0)){
+		t_lastBundle=t_bundle;
+	}else{
+		t_lastBundle=t_previousBundle;
+	}
+	t_str=String();
+	t_err=Execute(String(L"xcrun simctl get_app_container ",31)+t_udid+String(L" ",1)+t_lastBundle,t_str);
+	if(t_err==0){
+		bbPrint(String(L"**** Uninstalling App ****",26));
+		t_str=String();
+		t_err=Execute(String(L"xcrun simctl uninstall ",23)+t_udid+String(L" ",1)+t_lastBundle,t_str);
+		if(t_err!=0){
+			bbPrint(t_str);
+			return 2;
+		}
+	}
+	bbPrint(String(L"**** Installing App ****",24));
+	t_str=String();
+	t_err=Execute(String(L"xcrun simctl install ",21)+t_udid+String(L" \"Build/Products/",17)+m_casedConfig+String(L"-iphonesimulator/",17)+t_product+String(L".app\"",5),t_str);
+	if(t_err!=0){
+		bbPrint(t_str);
+		return 3;
+	}
+	bbPrint(String(L"**** Ready and waiting to execute App ****",42));
+	t_str=String();
+	t_err=Execute(String(L"xcrun simctl launch ",20)+t_udid+String(L" ",1)+t_bundle,t_str);
+	if(t_err!=0){
+		bbPrint(t_str);
+		t_err=4;
+	}else{
+		t_err=0;
+	}
+	if(FileType(String(L"tracefiles.trace",16))==2){
+		bb_os_DeleteDir(String(L"tracefiles.trace",16),true);
+	}
+	return t_err;
+}
 void c_IosBuilder::p_MakeTarget(){
 	p_CreateDataDir(String(L"data",4));
 	String t_main=LoadString(String(L"main.mm",7));
@@ -8841,78 +9145,107 @@ void c_IosBuilder::p_MakeTarget(){
 	if(!m_tcc->m_opt_build){
 		return;
 	}
-	p_Execute(String(L"xcodebuild -configuration ",26)+m_casedConfig+String(L" -sdk iphonesimulator",21),true);
+	gc_assign(m__xcodeVersion,bb_additional_XCODEVersion());
+	bbPrint(String(L"**** XCODE ",11)+bb_additional_Version2String(m__xcodeVersion,false)+String(L" detected ****",14));
+	String t_cmdStr=String();
+	String t_UDID=String();
+	String t_iOS_Device=String();
+	String t_useDevice=bb_config_GetConfigVar(String(L"IOS_USE_DEVICE",14));
+	String t_bundleID=String();
+	String t_productID=String();
+	String t_lastBundleID=String();
+	String t_lastProductID=String();
+	if(!bb_additional_XCRUNCheck()){
+		bb_transcc_Die(String(L"**** xcrun is not installed. Check that Xcode tools are set up ****",67));
+	}
+	if(bb_config_GetConfigVar(String(L"IOS_SDK_VERSION",15))!=String()){
+		gc_assign(m__iOS_SDKVersion,bb_additional_Version2Array(bb_config_GetConfigVar(String(L"IOS_SDK_VERSION",15))));
+	}else{
+		p_GetSDKVersion();
+	}
+	t_iOS_Device=bb_config_GetConfigVar(String(L"IOS_DEVICE_NAME",15));
+	if(!((t_iOS_Device).Length()!=0)){
+		t_iOS_Device=String(L"iPhone 4s",9);
+	}
+	t_UDID=bb_additional_XCODEGetDeviceUDID2(t_iOS_Device,m__iOS_SDKVersion);
+	if(!((t_UDID).Length()!=0)){
+		bb_transcc_Die(String(L"**** Error: Unable to find ",27)+t_iOS_Device+String(L" with iOS SDK version ",22)+bb_additional_Version2String(m__iOS_SDKVersion,true)+String(L" ****",5));
+	}
+	t_bundleID=bb_config_GetConfigVar(String(L"IOS_BUNDLE_ID",13));
+	t_productID=bb_config_GetConfigVar(String(L"IOS_PRODUCT_ID",14));
+	if(!((t_bundleID).Length()!=0)){
+		t_bundleID=String(L"com.yourcompany",15);
+	}
+	if(!((t_productID).Length()!=0)){
+		t_productID=String(L"MonkeyGame",10);
+	}
+	t_bundleID=(t_bundleID+String(L".",1)+t_productID).Replace(String(L" ",1),String(L"-",1));
+	if(FileType(String(L"buildfile",9))==1){
+		bb_transcc_BuildStatus->p_LoadFile(String(L"buildfile",9));
+		t_lastProductID=bb_transcc_BuildStatus->p_GetKey(m_casedConfig+String(L"_productID",10));
+		t_lastBundleID=bb_transcc_BuildStatus->p_GetKey(m_casedConfig+String(L"_bundleID",9));
+		bbPrint(String(L"**** Last iOS App File Product name was ",40)+t_lastProductID+String(L" ****",5));
+		bbPrint(String(L"**** Last iOS App File Bundle identifier was ",45)+t_lastBundleID+String(L" ****",5));
+	}
+	if(((t_lastProductID.Compare(t_productID))!=0) || ((t_lastBundleID.Compare(t_bundleID))!=0)){
+		if(FileType(String(L"Build",5))==2){
+			bb_os_DeleteDir(String(L"Build",5),true);
+		}
+		bb_transcc_BuildStatus->p_AddKey(m_casedConfig+String(L"_productID",10),t_productID);
+	}
+	bb_transcc_BuildStatus->p_AddKey(m_casedConfig+String(L"_bundleID",9),t_bundleID);
+	bb_transcc_BuildStatus->p_SaveFile(String(L"buildfile",9));
+	if(!((t_useDevice).Length()!=0)){
+		t_cmdStr=String(L"-configuration ",15)+m_casedConfig+String(L" -sdk iphonesimulator",21)+bb_additional_Version2String(m__iOS_SDKVersion,false)+String(L" -destination 'platform=iOS Simulator,id=",41)+t_UDID+String(L"'",1);
+		t_cmdStr=t_cmdStr+String(L" -derivedDataPath ./ -scheme MonkeyGame clean build",51);
+		t_cmdStr=t_cmdStr+(String(L" PRODUCT_BUNDLE_IDENTIFIER=\"",28)+t_bundleID+String(L"\" PRODUCT_NAME=\"",16)+t_productID+String(L"\"",1));
+		p_Execute(String(L"xcodebuild ",11)+t_cmdStr,true);
+	}else{
+		t_cmdStr=String(L"-configuration ",15)+m_casedConfig+String(L" -sdk iphoneos",14)+bb_additional_Version2String(m__iOS_SDKVersion,false)+String(L" -destination 'platform=iOS,id=",31)+t_UDID+String(L"'",1);
+		t_cmdStr=t_cmdStr+String(L" -derivedDataPath ./ -scheme MonkeyGame build",45);
+		t_cmdStr=t_cmdStr+(String(L" PRODUCT_BUNDLE_IDENTIFIER=\"",28)+t_bundleID+String(L"\" PRODUCT_NAME=\"",16)+t_productID+String(L"\"",1));
+		if(m__xcodeVersion[0]==7){
+			t_cmdStr=t_cmdStr+String(L" CLANG_LINK_OBJC_RUNTIME=OFF",28);
+		}
+		if((bb_config_GetConfigVar(String(L"IOS_XCODE_OPTS",14))).Length()!=0){
+			t_cmdStr=t_cmdStr+(String(L" ",1)+bb_config_GetConfigVar(String(L"IOS_XCODE_OPTS",14)));
+		}
+		p_Execute(String(L"xcodebuild ",11)+t_cmdStr,true);
+		t_cmdStr=String(L"PRODUCT_BUNDLE_IDENTIFIER=\"",27)+t_bundleID+String(L"\" PRODUCT_NAME=\"",16)+t_productID+String(L"\" archive -scheme MonkeyGame -archivePath \"",43)+RealPath(String(L"./Build/Products/",17)+m_casedConfig+String(L"-iphoneos",9))+String(L"/",1)+t_productID+String(L".xcarchive\"",11);
+		p_Execute(String(L"xcodebuild ",11)+t_cmdStr,true);
+		t_cmdStr=String(L"-exportArchive -archivePath \"",29)+RealPath(String(L"./Build/Products/",17)+m_casedConfig+String(L"-iphoneos",9))+String(L"/",1)+t_productID+String(L".xcarchive\"",11);
+		t_cmdStr=t_cmdStr+(String(L" -exportPath \"",14)+RealPath(String(L"./Build/Products/",17)+m_casedConfig+String(L"-iphoneos",9))+String(L"/",1)+t_productID+String(L"\" -exportFormat ipa -exportWithOriginalSigningIdentity",54));
+		p_Execute(String(L"xcodebuild ",11)+t_cmdStr,true);
+	}
 	if(!m_tcc->m_opt_run){
 		return;
 	}
-	String t_home=GetEnv(String(L"HOME",4));
-	String t_uuid=String(L"00C69C9A-C9DE-11DF-B3BE-5540E0D72085",36);
-	String t_src=String(L"build/",6)+m_casedConfig+String(L"-iphonesimulator/MonkeyGame.app",31);
-	String t_sim_path=String(L"/Applications/Xcode.app/Contents/Applications/iPhone Simulator.app",66);
-	if(FileType(t_sim_path)==0){
-		t_sim_path=String(L"/Applications/Xcode.app/Contents/Developer/Builders/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app",120);
-	}
-	if(FileType(t_sim_path)==2){
-		String t_dst=String();
-		Array<String > t_3=LoadDir(t_home+String(L"/Library/Application Support/iPhone Simulator",45));
-		int t_4=0;
-		while(t_4<t_3.Length()){
-			String t_f=t_3[t_4];
-			t_4=t_4+1;
-			if(t_f.Length()>2 && (int)t_f[0]>48 && (int)t_f[0]<58 && (int)t_f[1]==46 && (int)t_f[2]>=48 && (int)t_f[2]<58 && !t_f.Contains(String(L"-64",3)) && t_f>t_dst){
-				t_dst=t_f;
+	if(!((t_useDevice).Length()!=0)){
+		int t_err=p_iOSStartSimulator(t_UDID,t_productID,t_bundleID,t_lastBundleID);
+		int t_8=t_err;
+		if(t_8==1){
+			bb_transcc_Die(String(L"**** Error: There was a problem when executing instruments to start the simulator ****",86));
+		}else{
+			if(t_8==2){
+				bb_transcc_Die(String(L"**** Error: There was a problem when removing the App bundle from the simulator ****",84));
+			}else{
+				if(t_8==3){
+					bb_transcc_Die(String(L"**** Error: There was a problem when installing the App bundle to the simulator ****",84));
+				}else{
+					if(t_8==4){
+						bb_transcc_Die(String(L"**** Error: There was a problem when launching the App bundle in the simulator ****",83));
+					}
+				}
 			}
 		}
-		if(!((t_dst).Length()!=0)){
-			bb_transcc_Die(String(L"Can't find iPhone simulator app version dir",43));
-		}
-		t_dst=t_home+String(L"/Library/Application Support/iPhone Simulator/",46)+t_dst+String(L"/Applications",13);
-		CreateDir(t_dst);
-		if(FileType(t_dst)!=2){
-			bb_transcc_Die(String(L"Failed to create dir:",21)+t_dst);
-		}
-		t_dst=t_dst+(String(L"/",1)+t_uuid);
-		if(!((bb_os_DeleteDir(t_dst,true))!=0)){
-			bb_transcc_Die(String(L"Failed to delete dir:",21)+t_dst);
-		}
-		if(!((CreateDir(t_dst))!=0)){
-			bb_transcc_Die(String(L"Failed to create dir:",21)+t_dst);
-		}
-		p_Execute(String(L"cp -r \"",7)+t_src+String(L"\" \"",3)+t_dst+String(L"/MonkeyGame.app\"",16),true);
-		CreateDir(t_dst+String(L"/Documents",10));
-		p_Execute(String(L"killall \"iPhone Simulator\" 2>/dev/null",38),false);
-		p_Execute(String(L"open \"",6)+t_sim_path+String(L"\"",1),true);
-		return;
-	}
-	t_sim_path=String(L"/Developer/Builders/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app",88);
-	if(FileType(t_sim_path)==2){
-		String t_dst2=t_home+String(L"/Library/Application Support/iPhone Simulator/4.3.2",51);
-		if(FileType(t_dst2)==0){
-			t_dst2=t_home+String(L"/Library/Application Support/iPhone Simulator/4.3",49);
-			if(FileType(t_dst2)==0){
-				t_dst2=t_home+String(L"/Library/Application Support/iPhone Simulator/4.2",49);
-			}
-		}
-		CreateDir(t_dst2);
-		t_dst2=t_dst2+String(L"/Applications",13);
-		CreateDir(t_dst2);
-		t_dst2=t_dst2+(String(L"/",1)+t_uuid);
-		if(!((bb_os_DeleteDir(t_dst2,true))!=0)){
-			bb_transcc_Die(String(L"Failed to delete dir:",21)+t_dst2);
-		}
-		if(!((CreateDir(t_dst2))!=0)){
-			bb_transcc_Die(String(L"Failed to create dir:",21)+t_dst2);
-		}
-		p_Execute(String(L"cp -r \"",7)+t_src+String(L"\" \"",3)+t_dst2+String(L"/MonkeyGame.app\"",16),true);
-		p_Execute(String(L"killall \"iPhone Simulator\" 2>/dev/null",38),false);
-		p_Execute(String(L"open \"",6)+t_sim_path+String(L"\"",1),true);
-		return;
 	}
 }
 void c_IosBuilder::mark(){
 	c_Builder::mark();
 	gc_mark_q(m__buildFiles);
 	gc_mark_q(m__fileRefs);
+	gc_mark_q(m__xcodeVersion);
+	gc_mark_q(m__iOS_SDKVersion);
 }
 c_FlashBuilder::c_FlashBuilder(){
 }
@@ -9155,21 +9488,42 @@ void c_StdcppBuilder::p_MakeTarget(){
 		}
 	}
 	String t_main=LoadString(String(L"main.cpp",8));
+	String t_lastBuildName=String();
 	t_main=bb_transcc_ReplaceBlock(t_main,String(L"TRANSCODE",9),m_transCode,String(L"\n//",3));
 	t_main=bb_transcc_ReplaceBlock(t_main,String(L"CONFIG",6),p_Config(),String(L"\n//",3));
 	SaveString(t_main,String(L"main.cpp",8));
-	String t_out=String();
+	String t_out=bb_config_GetConfigVar(String(L"CC_OUT_FILENAME",15));
 	if(m_tcc->m_opt_build){
+		if(!((t_out).Length()!=0)){
+			t_out=String(L"main",4);
+		}
 		if(HostOS()==String(L"linux",5) || HostOS()==String(L"macos",5)){
 			if(!m_tcc->m_opt_mingw32cross){
-				t_out=String(L"main_",5)+HostOS();
+				t_out=t_out+(String(L"_",1)+HostOS());
 			}else{
-				t_out=String(L"main_winnt",10);
+				t_out=t_out+String(L"_winnt",6);
 			}
 		}else{
-			t_out=String(L"main_",5)+HostOS();
+			t_out=t_out+(String(L"_",1)+HostOS());
 		}
-		DeleteFile(t_out);
+		if(FileType(String(L"buildfile",9))==1){
+			bb_transcc_BuildStatus->p_LoadFile(String(L"buildfile",9));
+			t_lastBuildName=bb_transcc_BuildStatus->p_GetKey(m_casedConfig+String(L"_filename",9));
+			bbPrint(String(L"**** Last C++-Tool Application File Name ",41)+t_lastBuildName+String(L" ****",5));
+		}
+		if((t_lastBuildName.Compare(t_out))!=0){
+			if(HostOS()==String(L"winnt",5)){
+				if(FileType(t_lastBuildName+String(L".exe",4))==1){
+					DeleteFile(t_lastBuildName+String(L".exe",4));
+				}
+			}else{
+				if(FileType(t_lastBuildName)==1){
+					DeleteFile(t_lastBuildName);
+				}
+			}
+		}
+		bb_transcc_BuildStatus->p_AddKey(m_casedConfig+String(L"_filename",9),t_out);
+		bb_transcc_BuildStatus->p_SaveFile(String(L"buildfile",9));
 		String t_OPTS=String();
 		String t_LIBS=String();
 		String t_3=bb_config_ENV_HOST;
@@ -20332,7 +20686,7 @@ void c_CppTranslator::mark(){
 	c_CTranslator::mark();
 	gc_mark_q(m_dbgLocals);
 }
-String bb_transcc_RetrieveOpt(String t_search,String t_line,int t_start,String t_delimiter){
+String bb_additional_RetrieveOpt(String t_search,String t_line,int t_start,String t_delimiter){
 	String t_result=String(L"-1",2);
 	int t_i0=t_start;
 	int t_i1=0;
@@ -20363,27 +20717,27 @@ String bb_transcc_RetrieveOpt(String t_search,String t_line,int t_start,String t
 	}
 	return t_result;
 }
-int bb_transcc_GetMSize(String t_opt32,String t_opt64,String t_cc_opts,String t_ld_opts,String t_delimiter){
+int bb_additional_GetMSize(String t_opt32,String t_opt64,String t_cc_opts,String t_ld_opts,String t_delimiter){
 	int t_mCC=0;
 	int t_mLD=0;
-	if((bb_transcc_RetrieveOpt(t_opt32,t_cc_opts,0,t_delimiter)).ToInt()>-1){
+	if((bb_additional_RetrieveOpt(t_opt32,t_cc_opts,0,t_delimiter)).ToInt()>-1){
 		t_mCC=32;
 	}else{
 		t_mCC=1;
 	}
 	if(t_mCC==1 && t_opt64!=String()){
-		if((bb_transcc_RetrieveOpt(t_opt64,t_cc_opts,0,t_delimiter)).ToInt()>-1){
+		if((bb_additional_RetrieveOpt(t_opt64,t_cc_opts,0,t_delimiter)).ToInt()>-1){
 			t_mCC=64;
 		}
 	}
 	if((t_ld_opts).Length()!=0){
-		if((bb_transcc_RetrieveOpt(t_opt32,t_ld_opts,0,t_delimiter)).ToInt()>-1){
+		if((bb_additional_RetrieveOpt(t_opt32,t_ld_opts,0,t_delimiter)).ToInt()>-1){
 			t_mLD=32;
 		}else{
 			t_mLD=1;
 		}
 		if(t_mLD==1 && t_opt64!=String()){
-			if((bb_transcc_RetrieveOpt(t_opt64,t_ld_opts,0,t_delimiter)).ToInt()>-1){
+			if((bb_additional_RetrieveOpt(t_opt64,t_ld_opts,0,t_delimiter)).ToInt()>-1){
 				t_mLD=64;
 			}
 		}
@@ -20405,6 +20759,103 @@ int bb_transcc_GetMSize(String t_opt32,String t_opt64,String t_cc_opts,String t_
 		}
 	}
 	return 0;
+}
+c_CBuildStatus::c_CBuildStatus(){
+	m_map=(new c_StringMap2)->m_new();
+}
+c_CBuildStatus* c_CBuildStatus::m_new(){
+	return this;
+}
+String c_CBuildStatus::p_LoadFile(String t_path){
+	if(FileType(t_path)!=1){
+		bb_transcc_Die(String(L"Error: File ",12)+t_path+String(L" not found.",11));
+	}
+	String t_file=LoadString(t_path);
+	int t_equ=0;
+	Array<String > t_=t_file.Split(String(L"\n",1));
+	int t_2=0;
+	while(t_2<t_.Length()){
+		String t_line=t_[t_2];
+		t_2=t_2+1;
+		if(t_line!=String()){
+			t_equ=t_line.Find(String(L"=",1),0);
+			if(t_equ==-1){
+				bb_transcc_Die(String(L"Error: no key/value pair at line ",33)+t_line);
+			}
+			m_map->p_Add(t_line.Slice(0,t_equ),t_line.Slice(t_equ+1));
+		}
+	}
+	return String();
+}
+String c_CBuildStatus::p_GetKey(String t_key){
+	if(m_map->p_Contains(t_key)){
+		return m_map->p_Get(t_key);
+	}else{
+		return String();
+	}
+}
+void c_CBuildStatus::p_AddKey(String t_key,String t_val){
+	if(m_map->p_Contains(t_key)){
+		m_map->p_Update(t_key,t_val);
+	}else{
+		m_map->p_Add(t_key,t_val);
+	}
+}
+void c_CBuildStatus::p_SaveFile(String t_path){
+	String t_out=String();
+	c_KeyEnumerator* t_=m_map->p_Keys()->p_ObjectEnumerator();
+	while(t_->p_HasNext()){
+		String t_line=t_->p_NextObject();
+		if(t_line!=String()){
+			t_out=t_out+(t_line+String(L"=",1)+m_map->p_Get(t_line)+String(L"\n",1));
+		}
+	}
+	SaveString(t_out,t_path);
+	m_map->p_Clear();
+}
+void c_CBuildStatus::mark(){
+	Object::mark();
+	gc_mark_q(m_map);
+}
+c_CBuildStatus* bb_transcc_BuildStatus;
+c_MapKeys::c_MapKeys(){
+	m_map=0;
+}
+c_MapKeys* c_MapKeys::m_new(c_Map2* t_map){
+	gc_assign(this->m_map,t_map);
+	return this;
+}
+c_MapKeys* c_MapKeys::m_new2(){
+	return this;
+}
+c_KeyEnumerator* c_MapKeys::p_ObjectEnumerator(){
+	return (new c_KeyEnumerator)->m_new(m_map->p_FirstNode());
+}
+void c_MapKeys::mark(){
+	Object::mark();
+	gc_mark_q(m_map);
+}
+c_KeyEnumerator::c_KeyEnumerator(){
+	m_node=0;
+}
+c_KeyEnumerator* c_KeyEnumerator::m_new(c_Node2* t_node){
+	gc_assign(this->m_node,t_node);
+	return this;
+}
+c_KeyEnumerator* c_KeyEnumerator::m_new2(){
+	return this;
+}
+bool c_KeyEnumerator::p_HasNext(){
+	return m_node!=0;
+}
+String c_KeyEnumerator::p_NextObject(){
+	c_Node2* t_t=m_node;
+	gc_assign(m_node,m_node->p_NextNode());
+	return t_t->m_key;
+}
+void c_KeyEnumerator::mark(){
+	Object::mark();
+	gc_mark_q(m_node);
 }
 c_JsTranslator::c_JsTranslator(){
 }
@@ -21169,6 +21620,97 @@ int bb_html5_GetInfo_GIF(String t_path){
 		}
 	}
 	return -1;
+}
+Array<int > bb_additional_Version2Array(String t_str){
+	Array<int > t_ver=Array<int >(3);
+	int t_index=0;
+	int t_s1=0;
+	int t_s2=0;
+	while(t_index<3){
+		t_s2=t_str.Find(String(L".",1),t_s1);
+		if(t_s2<0){
+			t_s2=t_str.Length();
+		}
+		t_ver[t_index]=(t_str.Slice(t_s1,t_s2)).ToInt();
+		t_s1=t_s2+1;
+		t_index+=1;
+	}
+	return t_ver;
+}
+Array<int > bb_additional_XCODEVersion(){
+	String t_str=String();
+	Array<int > t_ver=Array<int >();
+	if(Execute(String(L"xcodebuild -version",19),t_str)!=0){
+		bbPrint(t_str);
+		bb_transcc_Die(String(L"**** Error: Unable to get Xcode version. Is Xcode installed? ****",65));
+	}
+	t_str=t_str.Slice(6,t_str.Find(String(L"\n",1),0));
+	t_ver=bb_additional_Version2Array(t_str.Trim());
+	return t_ver;
+}
+String bb_additional_Version2String(Array<int > t_ver,bool t_useRev){
+	String t_str=String(t_ver[0])+String(L".",1)+String(t_ver[1]);
+	if(t_useRev){
+		t_str=t_str+(String(L".",1)+String(t_ver[2]));
+	}
+	return t_str;
+}
+bool bb_additional_XCRUNCheck(){
+	String t_str=String();
+	if(Execute(String(L"xcrun -version",14))==0){
+		return true;
+	}
+	return false;
+}
+String bb_additional_XCODEGetDeviceUDID(String t_device){
+	String t_str=String();
+	String t_UDID=String();
+	if(Execute(String(L"instruments -s devices",22),t_str)!=0){
+		bbPrint(t_str);
+		bb_transcc_Die(String(L"**** Error: There was an error executing instruments ****",57));
+	}
+	Array<String > t_=t_str.Split(String(L"\n",1));
+	int t_2=0;
+	while(t_2<t_.Length()){
+		String t_line=t_[t_2];
+		t_2=t_2+1;
+		if(t_line.Contains(t_device)){
+			t_str=t_line.Trim();
+			break;
+		}else{
+			t_str=String();
+		}
+	}
+	if(t_str!=String()){
+		t_UDID=t_str.Slice(t_str.Find(String(L"[",1),0)+1,t_str.Find(String(L"]",1),t_str.Find(String(L"[",1),0)));
+	}
+	return t_UDID;
+}
+String bb_additional_XCODEGetDeviceUDID2(String t_device,Array<int > t_sdk){
+	String t_str=String();
+	String t_UDID=String();
+	String t_SDK2=String();
+	t_SDK2=bb_additional_Version2String(t_sdk,false);
+	if(Execute(String(L"instruments -s devices",22),t_str)!=0){
+		bbPrint(t_str);
+		bb_transcc_Die(String(L"**** Error: There was an error executing instruments ****",57));
+	}
+	Array<String > t_=t_str.Split(String(L"\n",1));
+	int t_2=0;
+	while(t_2<t_.Length()){
+		String t_line=t_[t_2];
+		t_2=t_2+1;
+		if(t_line.Contains(t_device) && t_line.Contains(t_SDK2)){
+			t_str=t_line.Trim();
+			break;
+		}else{
+			t_str=String();
+		}
+	}
+	if(t_str!=String()){
+		t_UDID=t_str.Slice(t_str.Find(String(L"[",1),0)+1,t_str.Find(String(L"]",1),t_str.Find(String(L"[",1),0)));
+	}
+	return t_UDID;
 }
 c_AsTranslator::c_AsTranslator(){
 }
@@ -23436,6 +23978,7 @@ int bbInit(){
 	c_Stack8::m_NIL=0;
 	c_Stack::m_NIL=String();
 	bb_translator__trans=0;
+	bb_transcc_BuildStatus=(new c_CBuildStatus)->m_new();
 	bb_html5_Info_Width=0;
 	bb_html5_Info_Height=0;
 	c_ClassDecl::m_nullObjectClass=(new c_ClassDecl)->m_new(String(L"{NULL}",6),1280,Array<String >(),0,Array<c_IdentType* >());
@@ -23464,6 +24007,7 @@ void gc_mark(){
 	gc_mark_q(c_Stack2::m_NIL);
 	gc_mark_q(c_Stack8::m_NIL);
 	gc_mark_q(bb_translator__trans);
+	gc_mark_q(bb_transcc_BuildStatus);
 	gc_mark_q(c_ClassDecl::m_nullObjectClass);
 	gc_mark_q(c_Stack9::m_NIL);
 }

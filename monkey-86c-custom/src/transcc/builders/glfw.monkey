@@ -16,14 +16,15 @@ Class GlfwBuilder Extends Builder
 	End
 	
 	'***** GCC *****
-	Method MakeGcc:Void()
+	' Dawlane modified: If the GLFW_APP_LABEL is used, then make this the output file name as well
+	Method MakeGcc:Void(fileOut:String)
 	
 		' Dawlane modified get any GLFW GCC CC/LD/LIBS config options
 		Local cc_opts:=GetConfigVar( "GLFW_GCC_CC_OPTS" )
 		Local ld_opts:=GetConfigVar( "GLFW_GCC_LD_OPTS" )
 		Local ld_lib_opts:=GetConfigVar( "GLFW_GCC_LDLIBS_OPTS" ) ' Give the option to link addition libraries
 		Local msize:=GetConfigVar( "GLFW_DESKTOP_MSIZE" )
-		Local dst:String, xcopts:String, choice:Int
+		Local dst:String, xcopts:String, choice:Int, lastBuildName:String
 		
 		' Dawlane modified Mingw32 cross-compiler
 		' Choose which target to build for
@@ -41,7 +42,7 @@ Class GlfwBuilder Extends Builder
 		Endif
 		
 #rem 
-Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building would be considered cross compiling)
+Dawlane modified CPU Architecture/GCC cross compiling (32/64 bit building would be considered cross compiling)
 	The idea:
 			GLFW_DESKTOP_MSIZE overrides all -m32/64 options in CC and LD including the -msize= parameter to transcc
 			Setting both CC and LD to -m32/64 overrides the -msize= parameters to transcc	
@@ -108,6 +109,24 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 			CreateDir "build"
 			CreateDir "build/"+casedConfig
 			
+			' Dawlane modified Last build status storage
+			If FileType( "buildfile" )=FILETYPE_FILE
+				BuildStatus.LoadFile()
+				lastBuildName=BuildStatus.GetKey( casedConfig+"_filename" )
+				Print "**** Last GLFW Application File Name "+lastBuildName+" ****"
+			Endif
+			
+			' Dawlane modified revome old files and new keys and save
+			If lastBuildName.Compare( fileOut )
+				If HostOS="winnt"
+					If FileType( casedConfig+"/"+lastBuildName+".exe" )=FILETYPE_FILE DeleteFile( casedConfig+"/"+lastBuildName+".exe" )
+				Else
+					If FileType( casedConfig+"/"+lastBuildName )=FILETYPE_FILE DeleteFile( casedConfig+"/"+lastBuildName )
+				Endif
+			Endif
+			BuildStatus.AddKey( casedConfig+"_filename", fileOut )
+			BuildStatus.SaveFile() ' Save the file and clear the BuildStatus string map
+			
 			' Dawlane modified GLFW CC/LD/LIBS options
 			If choice > 0
 				Print "**** Building "+choice+" bit application ****"
@@ -122,8 +141,6 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 					cc_opts+=" -m"+choice
 					ld_opts+=" -m"+choice
 				Endif
-			Else
-							
 			Endif
 			
 			Select ENV_CONFIG
@@ -139,16 +156,16 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 			' Dawlane Modified for MinGw Cross-Compiler
 			If HostOS="linux" Or HostOS="macos"
 				If tcc.opt_mingw32cross Print "Executing MinGW cross compiler" Else Print "Executing native GCC compiler"
-				Execute cmd+" CCOPTS=~q"+cc_opts+"~q LDOPTS=~q"+ld_opts+"~q LDLIBOPTS=~q"+ld_lib_opts+"~q "+xcopts+" OUT=~q"+casedConfig+"/MonkeyGame~q "
+				Execute cmd+" CCOPTS=~q"+cc_opts+"~q LDOPTS=~q"+ld_opts+"~q LDLIBOPTS=~q"+ld_lib_opts+"~q "+xcopts+" OUT=~q"+casedConfig+"/"+fileOut+"~q "
 				' Rename the executable for Windows
 				If tcc.opt_mingw32cross And (HostOS="linux" Or HostOS="macos")
 					Print "**** Appending .exe to executable ****"
-					Execute "mv "+casedConfig+"/MonkeyGame "+casedConfig+"/MonkeyGame.exe"
+					Execute "mv ~q"+casedConfig+"/"+fileOut+"~q ~q"+casedConfig+"/"+fileOut+".exe~q"
 				Endif
 			Else
 				' Windows NT MinGW build chain
 				Print "**** Executing MinGW compiler ****"
-				Execute cmd+" CCOPTS=~q"+cc_opts+"~q LDOPTS=~q"+ld_opts+"~q LDLIBOPTS=~q"+ld_lib_opts+"~q "+xcopts+" OUT=~q"+casedConfig+"/MonkeyGame~q "	
+				Execute cmd+" CCOPTS=~q"+cc_opts+"~q LDOPTS=~q"+ld_opts+"~q LDLIBOPTS=~q"+ld_lib_opts+"~q "+xcopts+" OUT=~q"+casedConfig+"/"+fileOut+"~q "	
 			Endif
 						
 			If tcc.opt_run
@@ -156,24 +173,24 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 				ChangeDir casedConfig
 				' Dawlane Modified for MinGw Cross-Compiler execute WINE
 				If HostOS="winnt"
-					Execute "MonkeyGame"
+					Execute "~q./"+fileOut+"~q"
 				Elseif HostOS="linux" And tcc.opt_mingw32cross
 					If FileType("/usr/bin/wine")
 						Print "**** Executing compiled program via WINE ****"
-						Execute "wine MonkeyGame.exe"
+						Execute "wine ~q"+fileOut+".exe~q"
 					Else
 						Print "Unable to execute cross compiled code. WINE not installed"
 					Endif
 				Elseif HostOS="macos" And tcc.opt_mingw32cross
 					If FileType("/usr/local/bin/wine")
 						Print "**** Executing compiled program via WINE ****"
-						Execute "/usr/local/bin/wine MonkeyGame.exe"
+						Execute "/usr/local/bin/wine ~q"+fileOut+".exe~q"
 					Else
 						Print "**** Unable to execute cross compiled code. WINE not installed ****"
 					Endif	
 				Else
 					Print "**** Executing compiled program ****"
-					Execute "./MonkeyGame"
+					Execute "~q./"+fileOut+"~q"
 				Endif
 			Endif
 		Endif
@@ -181,8 +198,9 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 	End
 	
 	'***** Vc2010 *****
-	Method MakeVc2010:Void()
-	
+	Method MakeVc2010:Void(fileOut:String)
+		Local msbuild_opts:=GetConfigVar( "GLFW_VSTUDIO_OPTS" ), lastBuildName:String
+		
 		CreateDir "vc2010/"+casedConfig
 		CreateDir "vc2010/"+casedConfig+"/internal"
 		CreateDir "vc2010/"+casedConfig+"/external"
@@ -199,27 +217,46 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 		If tcc.opt_build
 
 			ChangeDir "vc2010"
+			
+			' Dawlane modified Last build status storage
+			If FileType( "buildfile" )=FILETYPE_FILE
+				BuildStatus.LoadFile()
+				lastBuildName=BuildStatus.GetKey( casedConfig+"_filename" )
+				Print "**** Last GLFW Application File Name "+lastBuildName+" ****"
+			Endif
+			
+			' Dawlane modified revome old files and new keys and save
+			If lastBuildName.Compare( fileOut )
+				Local dir:String[]=LoadDir( "build/"+casedConfig )
+				For Local line:=Eachin dir
+					If line.Contains( ".manifest" ) Or line.Contains( ".tlog" ) Or line.Contains( ".lastbuild" ) DeleteFile( "build/"+casedConfig+"/"+line )
+				Next
+				If FileType( casedConfig+"/"+lastBuildName+".exe" )=FILETYPE_FILE DeleteFile( casedConfig+"/"+lastBuildName+".exe" )
+			Endif
+			BuildStatus.AddKey( casedConfig+"_filename", fileOut )
+			BuildStatus.SaveFile() ' Save the file and clear the BuildStatus string map
 
-			Execute "~q"+tcc.MSBUILD_PATH+"~q /p:Configuration="+casedConfig+" /p:Platform=Win32 MonkeyGame.sln"
+			Execute "~q"+tcc.MSBUILD_PATH+"~q /p:Configuration="+casedConfig+" "+msbuild_opts+" /p:Platform=Win32 /p:projectname=~q"+fileOut+"~q MonkeyGame.sln"
 			
 			If tcc.opt_run
 			
 				ChangeDir casedConfig
 
-				Execute "MonkeyGame"
+				Execute "~q"+fileOut+"~q"
 				
 			Endif
 		Endif
 	End
 
 	'***** Msvc *****
-	Method MakeMsvc:Void()
+	Method MakeMsvc:Void(fileOut:String)
 				
 		' Dawlane modified CPU Architecture	
 		' Pass Platform Win32/64 to the VS project file
 		' and append either 32 or 64 to the debug/release build and final directories
-		Local platform:String, choice:Int
+		Local platform:String, choice:Int, lastBuildName:String
 		Local msize:=GetConfigVar( "GLFW_DESKTOP_MSIZE" )
+		Local msbuild_opts:=GetConfigVar( "GLFW_VSTUDIO_OPTS" )	' Get exrat options
 		If msize tcc.opt_msize=msize 	' Config setting GLFW_DESKTOP_MSIZE overrides transcc option -msize=
 		If tcc.opt_msize
 			Select tcc.opt_msize
@@ -252,27 +289,43 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 		SaveString main,"main.cpp"
 		
 		If tcc.opt_build
-
+			Local lastbuild:String
 			ChangeDir "msvc"
-
-			Execute "~q"+tcc.MSBUILD_PATH+"~q /p:Configuration="+casedConfig+" "+platform'+/p:Platform=Win32 MonkeyGame.sln"
+			
+			' Dawlane modified Last build status storage
+			If FileType( "buildfile" )=FILETYPE_FILE
+				BuildStatus.LoadFile()
+				lastBuildName=BuildStatus.GetKey( casedConfig+"_filename" )
+				Print "**** Last GLFW Application File Name "+lastBuildName+" ****"
+			Endif
+			
+			' Dawlane modified revome old files and new keys and save
+			If lastBuildName.Compare( fileOut )
+				If FileType( casedConfig+"/"+lastBuildName+".exe" )=FILETYPE_FILE DeleteFile( casedConfig+"/"+lastBuildName+".exe" )
+				If FileType( "build/"+casedConfig+"/"+lastBuildName+".tlog" )=FILETYPE_DIR DeleteDir( "build/"+casedConfig+"/"+lastBuildName+".tlog", True )
+			Endif
+			BuildStatus.AddKey( casedConfig+"_filename", fileOut )
+			BuildStatus.SaveFile() ' Save the file and clear the BuildStatus string map
+			
+			Execute "~q"+tcc.MSBUILD_PATH+"~q /p:Configuration="+casedConfig+" "+platform+" "+msbuild_opts+" /p:projectname=~q"+fileOut+"~q"
 			
 			If tcc.opt_run
 			
 				ChangeDir casedConfig
 
-				Execute "MonkeyGame"
+				Execute "~q"+fileOut+"~q"
 				
 			Endif
 		Endif
 	End
 
 	'***** Xcode *****	
-	Method MakeXcode:Void()
+	Method MakeXcode:Void(fileOut:String)
 
 		CreateDataDir "xcode/data"
 
-		Local main:=LoadString( "main.cpp" )
+		Local main:=LoadString( "main.cpp" ), lastBuildName:String
+		Local xcode_opts:=GetConfigVar( "GLFW_XCODE_OPTS" )
 		
 		main=ReplaceBlock( main,"TRANSCODE",transCode )
 		main=ReplaceBlock( main,"CONFIG",Config() )
@@ -283,15 +336,27 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 		
 			ChangeDir "xcode"
 			
+			' Dawlane modified Last build status storage
+			If FileType( "buildfile" )=FILETYPE_FILE
+				BuildStatus.LoadFile()
+				lastBuildName=BuildStatus.GetKey( casedConfig+"_filename" )
+				Print "**** Last GLFW Application File Name "+lastBuildName+" ****"
+			Endif
+			
+			' Dawlane modified revome old files and new keys and save
+			If lastBuildName.Compare( fileOut ) If FileType( "build" )=FILETYPE_DIR DeleteDir( "build", True )
+			BuildStatus.AddKey( casedConfig+"_filename", fileOut )
+			BuildStatus.SaveFile() ' Save the file and clear the BuildStatus string map
+			
 '			Execute "set -o pipefail && xcodebuild -configuration "+casedConfig+" | egrep -A 5 ~q(error|warning):~q"
-			Execute "xcodebuild -configuration "+casedConfig
+			Execute "xcodebuild -configuration "+casedConfig+" "+xcode_opts+" PRODUCT_NAME=~q"+fileOut+"~q EXECUTABLE_NAME=~q"+fileOut+"~q"
 			
 			If tcc.opt_run
 			
 				ChangeDir "build/"+casedConfig
-				ChangeDir "MonkeyGame.app/Contents/MacOS"
+				ChangeDir fileOut+".app/Contents/MacOS"
 				
-				Execute "./MonkeyGame"
+				Execute "./"+fileOut
 			Endif
 		Endif
 	End
@@ -313,22 +378,25 @@ Dawlane modified CPU Architecture	/ GCC cross compiling (32/64 bit building woul
 	End
 	
 	Method MakeTarget:Void()
+		' If GLFW_APP_LABEL is used, then set the out put file name to the same
+		Local monkeyName:=GetConfigVar( "GLFW_APP_FILENAME" )
+		If Not monkeyName monkeyName="MonkeyGame"
 		Select HostOS
 		Case "winnt"
 			If GetConfigVar( "GLFW_USE_MINGW" )="1" And tcc.MINGW_PATH
-				MakeGcc
+				MakeGcc(monkeyName)
 			Else If FileType( "vc2010" )=FILETYPE_DIR
-				MakeVc2010
+				MakeVc2010(monkeyName)
 			Else If FileType( "msvc" )=FILETYPE_DIR
-				MakeMsvc
+				MakeMsvc(monkeyName)
 			Else If tcc.MINGW_PATH
-				MakeGcc
+				MakeGcc(monkeyName)
 			Endif
 		Case "macos"
 			' Dawlane Modified for MinGw Cross-Compiler.
-			If tcc.opt_mingw32cross  MakeGcc Else MakeXcode
+			If tcc.opt_mingw32cross  MakeGcc(monkeyName) Else MakeXcode(monkeyName)
 		Case "linux"
-			MakeGcc
+			MakeGcc(monkeyName)
 		End
 	End
 	

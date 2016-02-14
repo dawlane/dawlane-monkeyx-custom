@@ -38,26 +38,46 @@ Class StdcppBuilder Extends Builder
 		Case "profile" SetConfigVar "PROFILE","1"
 		End
 		
-		Local main:=LoadString( "main.cpp" )
+		Local main:=LoadString( "main.cpp" ), lastBuildName:String
 
 		main=ReplaceBlock( main,"TRANSCODE",transCode )
 		main=ReplaceBlock( main,"CONFIG",Config() )
 
 		SaveString main,"main.cpp"
 		
-		Local out:String
+		Local out:String=GetConfigVar( "CC_OUT_FILENAME" )
 		
 		If tcc.opt_build
+			
+			' Dawlane Modified Set output file name
+			If Not out out="main"
 			If HostOS="linux" Or HostOS="macos"
 				If Not tcc.opt_mingw32cross Then
-					out="main_"+HostOS
+					out+="_"+HostOS
 				Else
-					out="main_winnt"
+					out+="_winnt"
 				Endif
 			Else
-				out="main_"+HostOS
-			EndIf
-			DeleteFile out
+				out+="_"+HostOS
+			Endif
+			
+			' Dawlane modified Last build status storage
+			If FileType( "buildfile" )=FILETYPE_FILE
+				BuildStatus.LoadFile()
+				lastBuildName=BuildStatus.GetKey( casedConfig+"_filename" )
+				Print "**** Last C++-Tool Application File Name "+lastBuildName+" ****"
+			Endif
+			
+			' Dawlane modified revome old file
+			If lastBuildName.Compare( out )
+				If HostOS="winnt"
+					If FileType( lastBuildName+".exe" )=FILETYPE_FILE DeleteFile( lastBuildName+".exe" )
+				Else
+					If FileType( lastBuildName )=FILETYPE_FILE DeleteFile( lastBuildName )
+				Endif
+			Endif
+			BuildStatus.AddKey(casedConfig+"_filename", out )
+			BuildStatus.SaveFile()  
 			
 			Local OPTS:="",LIBS:=""
 			

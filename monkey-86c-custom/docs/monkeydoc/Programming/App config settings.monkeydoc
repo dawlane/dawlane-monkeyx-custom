@@ -55,10 +55,16 @@ The following app config settings are currently supported:
 #GLFW_APP_PUBLISHER="My Company"		'Optional human readable publisher name for app. Must be filesystem friendly.
 										'Not defined by default.
 
-#GLFW_GCC_CC_OPTS=""					'Allows you to pass GCC/MinGW compiler options directly to the backend compiler.
-#GLFW_GCC_LD_OPTS=""					'Allows you to pass GCC/MinGW linker options directly to the backend compiler.
+#GLFW_APP_FILENAME="MonkeyGame"			'Change the output binary's file name.
+										'Must contain filesystem friendly chars only. White space chars must be avoided.
+
+#GLFW_GCC_CC_OPTS=""					'Allows you to pass GCC/MinGW compiler options directly to the backend compiler. Advanced use only
+#GLFW_GCC_LD_OPTS=""					'Allows you to pass GCC/MinGW linker options directly to the backend compiler. Advanced use only
 #GLFW_GCC_LDLIBS_OPTS=""				'Allows you to pass addition libraries and search options
 #GLFW_DESKTOP_MSIZE=""					'This will let you override any -m32/64 switchs in #GLFW_GCC_CC_OPTS or #GLFW_GCC_LD_OPTS or transcc -msize options. To use this feature you will need a compiler that supports 32 and 64 bit compilation. It will also work with Visual Studio, as long as the solution is created to support both Win32 and x64 (name it Win64) platforms.
+
+#GLFW_VSTUDIO_OPTS=""					'Allows you to pass Visual Studio compiler options directly to the backend compiler. Advanced use only.
+#GLFW_XCODE_OPTS=""						'Allows you to pass XCODE compiler options directly to the backend compiler. Advanced use only.
 
 'XNA settings, defaults shown
 '
@@ -76,6 +82,10 @@ The following app config settings are currently supported:
 #IOS_RETINA_ENABLED=True
 #IOS_ACCELEROMETER_ENABLED=True
 #IOS_DISPLAY_LINK_ENABLED=False
+#IOS_DEVICE_NAME="iPhone 4s"			' XCODE 6+: Select the device to build to by name. The SDK must match the current version on the device
+#IOS_SDK_VERSION=""						' XCODE 6+: Select the iOS SDK to use. The default is to use the current iOS SDK installed.
+#IOS_BUNDLE_ID="com.yourcompany"		' XCODE 7+: Include an application identifier. Note that the product id will complete the rest. To use this with Xcode 6 requires that the targets Bundle Identifier variable is set to ${PRODUCT_BUNDLE_IDENTIFIER} in the Info settings. 
+#IOS_PRODUCT_ID="MonkeyGame"			' XCODE 6+: Give the application a name. Note that this will form part of the bundle identifier
 
 'Android settings, defaults shown
 '
@@ -117,6 +127,8 @@ The following app config settings are currently supported:
 'Misc
 '
 #CC_OPTS=""							'additional gcc options for stdcpp target, eg: #CC_OPTS+="-DMyDefine"
+#CC_OUT_FILENAME="main"			'Change the output binary's file name.
+										'Must contain filesystem friendly chars only. White space chars must be avoided.
 
 </pre>
 

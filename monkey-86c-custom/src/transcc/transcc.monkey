@@ -5,12 +5,19 @@
 
 Import trans
 Import builders
+Import additional
 
-' Dawlane modified. Just in case there is a 64 bit version of MinGW installed and you wish to deploy to any Windows x86 system
+' Dawlane modified. Just in case there is a 64 bit version of MinGW installed and a 32bit is required
 '	#CC_OPTS="-m32"
 
+'#CC_OPTS+=" -s" ' Uncomment to strip the executable of symbols for release. Windows and Linux only.Throws error on OS X
+#CC_OUT_FILENAME="transcc"
+
+' Dawlane modified. Use to load and save a last build status file
+Global BuildStatus:CBuildStatus = New CBuildStatus
+
 Const VERSION:="1.86"
-Const DAWLANE_MOD_VER:="0.03"
+Const DAWLANE_MOD_VER:="0.04"
 
 Function Main()
 	Local tcc:=New TransCC
@@ -117,64 +124,6 @@ Function MatchPath:Bool( text:String,pattern:String )
 	Return match
 End
 
-#rem Dawlane modified. Simple options search
-	Get an option from from a command line string.
-	Returns either -1 for not found, start position of option or a right hand value if equal signed.
-	Will not return rhs of options such as -x language
-#end
-
-Function RetrieveOpt:String(search:String, line:String, start=0, delimiter:String=" ")
-
-	Local result:String=-1,i0:Int=start,i1:Int,i2:Int,i3:Int,opt:String
-	
-	While i0<line.Length()
-		i1=line.Find(delimiter,i0)		
-		If i1<0 i1=line.Length()		
-		opt=line[i0 .. i1]
-		i2=opt.Find("=")+1
-		If i2>1 i3=i2 Else i3=i1		
-		If Not search.Compare(opt[ .. i3])		
-			If i2>1
-				result=opt[i2..i1]
-				Exit
-			Endif			
-			result=i0
-			Exit			
-		Endif
-		i0=i1+1
-	Wend
-	
-	Return result
-End Function
-
-#rem Dawlane modified.
-	General use is to parse for 32/64 options, but can be used to parse a single line by passing values to parameters 1 and 3
-	Values returned are 32/64 for a match (single line returns 32), 0 for no match  or -1 for mismatch if both of the given values are found in the
-	strings to search i.e. string1=-m32 string2=-m64. Needs more work to trap multiple options.
-#end
-Function GetMSize:Int(opt32:String,opt64:String="",cc_opts:String,ld_opts:String="",delimiter:String =" ")
-
-	Local mCC:Int,mLD:Int
-	
-	If Int(RetrieveOpt(opt32,cc_opts,,delimiter))>-1 mCC=32 Else mCC=1
-	If mCC=1 And opt64<>"" Then If Int(RetrieveOpt(opt64,cc_opts,,delimiter))>-1 mCC=64
-	
-	If ld_opts
-		If Int(RetrieveOpt(opt32,ld_opts,,delimiter))>-1 mLD=32 Else mLD=1		
-		If mLD=1 And opt64<>"" Then If Int(RetrieveOpt(opt64,ld_opts,,delimiter))>-1 mLD=64
-		
-		' Compare
-		If ((mCC | mLD)&(~1))~96=0 Return -1	' Mismatch. Merge CC and LD and trap the top bits and exclusive or the bits to check.
-		If (mCC & mLD)=32 Return 32				' Solid match
-		If (mCC & mLD)=64 Return 64				' Solid match
-		If (mCC & mLD)=1 Return 0				' Solid match neither found
-	Else
-		If mCC>1 Then Return mCC
-	Endif
-	
-	Return 0
-End Function
-
 Class Target
 	Field dir:String
 	Field name:String
@@ -239,9 +188,9 @@ Class TransCC
 		
 		' Dawlane modified MinGW32 cross-compiler & CPU Architecture
 		If HostOS="winnt"
-			Print "TRANS monkey compiler V"+VERSION+" (CPU architecure selection enabled v"+DAWLANE_MOD_VER+" by dawlane)"
+			Print "TRANS monkey compiler V"+VERSION+" (Dawlane Custom v"+DAWLANE_MOD_VER+")"
 		Else
-			Print "TRANS monkey compiler V"+VERSION+" (MinGW Cross Compiler and CPU architecure selection enabled v"+DAWLANE_MOD_VER+" by dawlane)"
+			Print "TRANS monkey compiler V"+VERSION+" (Dawlane Custom with MinGW support v"+DAWLANE_MOD_VER+")"
 		Endif
 	
 		monkeydir=RealPath( ExtractDir( AppPath )+"/.." )
